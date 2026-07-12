@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import date
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exc
+from sqlalchemy import select, exc, or_
 
 from app.db.session import get_db
 from app.models.driver import Driver
@@ -16,15 +16,25 @@ router = APIRouter(prefix="/drivers", tags=["Drivers"])
 @router.get("", response_model=List[DriverOut])
 async def list_drivers(
     status_filter: Optional[str] = Query(None, alias="status"),
+    search: Optional[str] = Query(None),
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """List drivers. Accessible to all authenticated users."""
-    query = select(Driver).offset(skip).limit(limit)
+    query = select(Driver)
     if status_filter:
         query = query.where(Driver.status == status_filter)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Driver.name.ilike(search_pattern),
+                Driver.license_category.ilike(search_pattern)
+            )
+        )
+    query = query.offset(skip).limit(limit)
     
     result = await db.execute(query)
     return result.scalars().all()

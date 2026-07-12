@@ -5,11 +5,59 @@ import { Loader2 } from 'lucide-react';
 import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Approximate coordinates for the hubs
+// Approximate coordinates for the hubs across India
 const HUBS = {
-  nairobi: [-1.2921, 36.8219],
-  mombasa: [-4.0435, 39.6682],
-  kisumu: [-0.0917, 34.7680]
+  pune: [18.5204, 73.8567],
+  mumbai: [19.0760, 72.8777],
+  bangalore: [12.9716, 77.5946],
+  chennai: [13.0827, 80.2707],
+  ahmedabad: [23.0225, 72.5714],
+  jaipur: [26.9124, 75.7873],
+  delhi: [28.6139, 77.2090],
+  mysore: [12.2958, 76.6394],
+  rajkot: [22.3039, 70.8022],
+  pondicherry: [11.9416, 79.8083],
+  nashik: [19.9975, 73.7898],
+  solapur: [17.6599, 75.9064],
+  hubli: [15.3647, 75.1240],
+  agra: [27.1767, 78.0081],
+  kolhapur: [16.7050, 74.2433],
+  udaipur: [24.5854, 73.7125]
+};
+
+const MAJOR_HUBS = {
+  pune: { name: 'Pune Depot', color: '#276EF1' },
+  mumbai: { name: 'Mumbai Hub', color: '#276EF1' },
+  bangalore: { name: 'Bangalore Warehouse', color: '#06C167' },
+  chennai: { name: 'Chennai Depot', color: '#06C167' },
+  delhi: { name: 'Delhi Depot', color: '#FFC043' },
+  ahmedabad: { name: 'Ahmedabad Hub', color: '#FFC043' },
+  jaipur: { name: 'Jaipur Hub', color: '#FFC043' }
+};
+
+const DEFAULT_CONNECTIONS = [
+  ['pune', 'mumbai'],
+  ['pune', 'nashik'],
+  ['pune', 'solapur'],
+  ['pune', 'kolhapur'],
+  ['bangalore', 'mysore'],
+  ['bangalore', 'hubli'],
+  ['bangalore', 'chennai'],
+  ['ahmedabad', 'rajkot'],
+  ['chennai', 'pondicherry'],
+  ['delhi', 'agra'],
+  ['jaipur', 'udaipur']
+];
+
+const findHubKey = (cityString) => {
+  if (!cityString) return null;
+  const str = cityString.toLowerCase();
+  for (const hub of Object.keys(HUBS)) {
+    if (str.includes(hub)) {
+      return hub;
+    }
+  }
+  return null;
 };
 
 export const MapSimulation = () => {
@@ -30,18 +78,13 @@ export const MapSimulation = () => {
     );
   }
 
-  // Check which vectors are active based on dispatch routes
-  const hasNairobiMombasa = activeTrips.some(t => 
-    t.source.toLowerCase().includes('nairobi') && t.destination.toLowerCase().includes('mombasa')
-  );
-
-  const hasNairobiKisumu = activeTrips.some(t => 
-    t.source.toLowerCase().includes('nairobi') && t.destination.toLowerCase().includes('kisumu')
-  );
-
-  const hasKisumuMombasa = activeTrips.some(t => 
-    t.source.toLowerCase().includes('kisumu') && t.destination.toLowerCase().includes('mombasa')
-  );
+  const isConnectionActive = (hubA, hubB) => {
+    return activeTrips.some(t => {
+      const src = findHubKey(t.source);
+      const dest = findHubKey(t.destination);
+      return (src === hubA && dest === hubB) || (src === hubB && dest === hubA);
+    });
+  };
 
   return (
     <div className="relative w-full h-full bg-gray-950 rounded-2xl overflow-hidden border border-uber-gray-900 select-none">
@@ -58,8 +101,8 @@ export const MapSimulation = () => {
       </div>
 
       <MapContainer 
-        center={[-1.2, 37.5]} 
-        zoom={6} 
+        center={[20.5937, 78.9629]} 
+        zoom={5} 
         style={{ height: '100%', width: '100%', minHeight: '300px' }}
         zoomControl={false}
       >
@@ -69,58 +112,47 @@ export const MapSimulation = () => {
         />
 
         {/* Routes */}
-        <Polyline 
-          positions={[HUBS.nairobi, HUBS.mombasa]} 
-          pathOptions={{ 
-            color: hasNairobiMombasa || activeTrips.length === 0 ? '#06C167' : '#374151', 
-            weight: 3, 
-            dashArray: hasNairobiMombasa ? undefined : '5, 5' 
-          }} 
-        />
-        <Polyline 
-          positions={[HUBS.nairobi, HUBS.kisumu]} 
-          pathOptions={{ 
-            color: hasNairobiKisumu ? '#06C167' : '#374151', 
-            weight: 3, 
-            dashArray: hasNairobiKisumu ? undefined : '5, 5' 
-          }} 
-        />
-        <Polyline 
-          positions={[HUBS.kisumu, HUBS.mombasa]} 
-          pathOptions={{ 
-            color: hasKisumuMombasa ? '#06C167' : '#374151', 
-            weight: 3, 
-            dashArray: hasKisumuMombasa ? undefined : '5, 5' 
-          }} 
-        />
+        {DEFAULT_CONNECTIONS.map(([hubA, hubB], idx) => {
+          const active = isConnectionActive(hubA, hubB);
+          return (
+            <Polyline
+              key={idx}
+              positions={[HUBS[hubA], HUBS[hubB]]}
+              pathOptions={{
+                color: active ? '#06C167' : '#374151',
+                weight: active ? 4 : 2,
+                dashArray: active ? undefined : '5, 5'
+              }}
+            />
+          );
+        })}
 
-        {/* Hubs */}
-        <CircleMarker center={HUBS.nairobi} radius={8} pathOptions={{ color: '#276EF1', fillColor: '#276EF1', fillOpacity: 1 }}>
-          <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>Nairobi Depot</Tooltip>
-        </CircleMarker>
-
-        <CircleMarker center={HUBS.mombasa} radius={8} pathOptions={{ color: '#06C167', fillColor: '#06C167', fillOpacity: 1 }}>
-          <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>Mombasa Port</Tooltip>
-        </CircleMarker>
-
-        <CircleMarker center={HUBS.kisumu} radius={8} pathOptions={{ color: '#FFC043', fillColor: '#FFC043', fillOpacity: 1 }}>
-          <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>Kisumu Hub</Tooltip>
-        </CircleMarker>
+        {/* Major Hubs */}
+        {Object.entries(MAJOR_HUBS).map(([key, info]) => (
+          <CircleMarker 
+            key={key} 
+            center={HUBS[key]} 
+            radius={8} 
+            pathOptions={{ color: info.color, fillColor: info.color, fillOpacity: 1 }}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>{info.name}</Tooltip>
+          </CircleMarker>
+        ))}
       </MapContainer>
 
       {/* Map Legend */}
       <div className="absolute bottom-4 right-4 z-[400] bg-gray-900/90 border border-gray-800 rounded-xl p-3 flex flex-col gap-1.5 text-[9px] text-gray-400 select-none text-left">
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-uber-blue"></span>
-          <span>Nairobi Hub (Origin Depot)</span>
+          <span className="w-2 h-2 rounded-full bg-[#276EF1]"></span>
+          <span>Maharashtra (Pune / Mumbai Hubs)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-uber-green"></span>
-          <span>Mombasa Hub (Coastal Terminal)</span>
+          <span className="w-2 h-2 rounded-full bg-[#06C167]"></span>
+          <span>South India (Bangalore / Chennai Hubs)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-uber-amber"></span>
-          <span>Kisumu Hub (Western Terminal)</span>
+          <span className="w-2 h-2 rounded-full bg-[#FFC043]"></span>
+          <span>North & West India (Delhi / Jaipur / Ahmedabad)</span>
         </div>
       </div>
 

@@ -95,10 +95,10 @@ export const VehicleList = () => {
               onChange={(e) => setTypeFilter(e.target.value)}
               options={[
                 { value: '', label: 'All Types' },
-                { value: 'Heavy Hauler', label: 'Heavy Hauler' },
-                { value: 'Box Body', label: 'Box Body' },
-                { value: 'Dry Van', label: 'Dry Van' },
-                { value: 'Flatbed', label: 'Flatbed' }
+                { value: 'Bus', label: 'Bus' },
+                { value: 'Truck', label: 'Truck' },
+                { value: 'Mini Bus', label: 'Mini Bus' },
+                { value: 'LCV', label: 'LCV' }
               ]}
             />
           </div>

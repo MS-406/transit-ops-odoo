@@ -65,31 +65,32 @@ const PageHeader = ({ title, category = 'Platform' }) => (
 
 // Placeholder: Settings
 const SettingsPage = () => {
-  const user = useAuthStore((state) => state.user);
-  
+  const { user } = useAuthStore();
   return (
-  <div className="text-left">
-    <PageHeader title="Settings" category="Administration" />
-    <Card className="max-w-xl">
-      <CardHeader>
-        <h4 className="font-extrabold text-xs uppercase text-gray-500 tracking-wider">User Account Profile</h4>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4 text-xs">
-        <div>
-          <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Active Name</strong>
-          <p className="text-sm font-bold text-uber-black mt-1">{user?.name || 'Unknown'}</p>
-        </div>
-        <div>
-          <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Email Address</strong>
-          <p className="text-sm font-semibold text-uber-black mt-1">{user?.email || 'unknown@example.com'}</p>
-        </div>
-        <div>
-          <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Access Level</strong>
-          <div className="mt-1"><Badge status="success">{user?.role || 'User'}</Badge></div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+    <div className="text-left">
+      <PageHeader title="Settings" category="Administration" />
+      <Card className="max-w-xl">
+        <CardHeader>
+          <h4 className="font-extrabold text-xs uppercase text-gray-500 tracking-wider">User Account Profile</h4>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 text-xs">
+          <div>
+            <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Active Name</strong>
+            <p className="text-sm font-bold text-uber-black mt-1">{user?.full_name || user?.name || 'Operator'}</p>
+          </div>
+          <div>
+            <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Email Address</strong>
+            <p className="text-sm font-semibold text-uber-black mt-1">{user?.email || 'N/A'}</p>
+          </div>
+          <div>
+            <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Access Level</strong>
+            <div className="mt-1">
+              <Badge status="success">{user?.role_name || user?.role || 'Guest'}</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

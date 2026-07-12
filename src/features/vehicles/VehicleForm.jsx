@@ -160,10 +160,10 @@ export const VehicleForm = ({ isOpen, onClose, vehicleId }) => {
               error={errors.type?.message}
               disabled={isSaving}
               options={[
-                { value: 'Heavy Hauler', label: 'Heavy Hauler (Semi/Tractor)' },
-                { value: 'Box Body', label: 'Box Body (Medium Truck)' },
-                { value: 'Dry Van', label: 'Dry Van (General Cargo)' },
-                { value: 'Flatbed', label: 'Flatbed (Oversized/Containers)' }
+                { value: 'Bus', label: 'Bus' },
+                { value: 'Truck', label: 'Truck' },
+                { value: 'Mini Bus', label: 'Mini Bus' },
+                { value: 'LCV', label: 'LCV' }
               ]}
               {...register('type', { required: 'Type is required' })}
             />

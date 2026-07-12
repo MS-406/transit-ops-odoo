@@ -121,10 +121,10 @@ export const Dashboard = () => {
               onChange={(e) => setSelectedType(e.target.value)}
               options={[
                 { value: '', label: 'All Classifications' },
-                { value: 'Heavy Hauler', label: 'Heavy Hauler' },
-                { value: 'Box Body', label: 'Box Body' },
-                { value: 'Dry Van', label: 'Dry Van' },
-                { value: 'Flatbed', label: 'Flatbed' }
+                { value: 'Bus', label: 'Bus' },
+                { value: 'Truck', label: 'Truck' },
+                { value: 'Mini Bus', label: 'Mini Bus' },
+                { value: 'LCV', label: 'LCV' }
               ]}
             />
           </div>
@@ -134,9 +134,13 @@ export const Dashboard = () => {
               onChange={(e) => setSelectedRegion(e.target.value)}
               options={[
                 { value: '', label: 'All Regions' },
-                { value: 'Nairobi East', label: 'Nairobi East' },
-                { value: 'Nairobi West', label: 'Nairobi West' },
-                { value: 'Mombasa Port', label: 'Mombasa Port' }
+                { value: 'Pune', label: 'Pune' },
+                { value: 'Mumbai', label: 'Mumbai' },
+                { value: 'Bangalore', label: 'Bangalore' },
+                { value: 'Chennai', label: 'Chennai' },
+                { value: 'Ahmedabad', label: 'Ahmedabad' },
+                { value: 'Jaipur', label: 'Jaipur' },
+                { value: 'Delhi', label: 'Delhi' }
               ]}
             />
           </div>

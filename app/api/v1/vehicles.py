@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exc, func
+from sqlalchemy import select, exc, func, or_
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
@@ -19,15 +19,29 @@ router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 @router.get("", response_model=List[VehicleOut])
 async def list_vehicles(
     status_filter: Optional[str] = Query(None, alias="status"),
+    type_filter: Optional[str] = Query(None, alias="type"),
+    search: Optional[str] = Query(None),
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst", "admin"]))
 ):
     """List vehicles. Accessible to all authenticated users."""
-    query = select(Vehicle).offset(skip).limit(limit)
+    query = select(Vehicle)
     if status_filter:
         query = query.where(Vehicle.status == status_filter)
+    if type_filter:
+        query = query.where(Vehicle.type == type_filter)
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Vehicle.registration_number.ilike(search_pattern),
+                Vehicle.name_model.ilike(search_pattern),
+                Vehicle.region.ilike(search_pattern)
+            )
+        )
+    query = query.offset(skip).limit(limit)
     
     result = await db.execute(query)
     return result.scalars().all()

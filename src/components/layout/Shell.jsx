@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import client from '../../api/client';
 import { useAuthStore } from '../../store/authStore';
 import { CommandPalette } from './CommandPalette';
 import { toast } from 'react-hot-toast';
@@ -16,7 +18,8 @@ import {
   Bell,
   Menu,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react';
 
 export const Shell = ({ children }) => {
@@ -25,6 +28,30 @@ export const Shell = ({ children }) => {
   // Initialize based on window width to keep open on desktop and closed on mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const { data: alerts, isLoading } = useQuery({
+    queryKey: ['notifications-alerts', token],
+    queryFn: async () => {
+      if (token === 'mock-jwt-token-12345') {
+        return [
+          {
+            id: 'driver-exp-d-3',
+            type: 'critical',
+            message: "Driver 'Bob Johnson' license has expired (2026-06-15)."
+          },
+          {
+            id: 'driver-exp-d-2',
+            type: 'warning',
+            message: "Driver 'Jane Watson' license expires in 13 days."
+          }
+        ];
+      }
+      const res = await client.get('/notifications/alerts');
+      return res.data;
+    },
+    enabled: isAuthenticated
+  });
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -56,16 +83,7 @@ export const Shell = ({ children }) => {
     navigate('/login');
   };
 
-  const handleNotificationClick = () => {
-    toast('No new notifications', {
-      icon: '🔔',
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-      },
-    });
-  };
+
 
   // Nav items with RBAC roles configuration
   const navigationItems = [
@@ -245,13 +263,52 @@ export const Shell = ({ children }) => {
           )}
 
           {/* Notification Indicator */}
-          <button 
-            onClick={handleNotificationClick}
-            className="relative p-2 text-gray-300 hover:text-uber-white transition-colors hover:scale-105 active:scale-95"
-          >
-            <Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-uber-green rounded-full"></span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className="relative p-2 text-gray-300 hover:text-uber-white transition-colors hover:scale-105 active:scale-95 flex items-center justify-center"
+            >
+              <Bell size={20} />
+              {alerts && alerts.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-uber-green rounded-full"></span>
+              )}
+            </button>
+
+            {isNotifOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-uber-white text-uber-black border border-uber-gray-300 rounded-2xl shadow-xl z-50 p-4 select-none">
+                <div className="flex justify-between items-center mb-3 pb-2 border-b border-uber-gray-300">
+                  <span className="font-extrabold text-xs uppercase text-gray-500 tracking-wider">Alert Center</span>
+                  {alerts && alerts.length > 0 && (
+                    <span className="text-[10px] bg-red-50 text-uber-red font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      {alerts.length} Warnings
+                    </span>
+                  )}
+                </div>
+                {isLoading ? (
+                  <div className="flex justify-center py-6">
+                    <Loader2 className="animate-spin text-uber-black" size={18} />
+                  </div>
+                ) : !alerts || alerts.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-6 italic text-center">No active compliance or trip alerts.</p>
+                ) : (
+                  <div className="flex flex-col gap-2.5 max-h-64 overflow-y-auto">
+                    {alerts.map((alert) => (
+                      <div 
+                        key={alert.id} 
+                        className={`p-2.5 rounded-xl border text-[11px] font-semibold leading-normal ${
+                          alert.type === 'critical' 
+                            ? 'bg-red-50/50 border-red-100 text-uber-red' 
+                            : 'bg-amber-50/50 border-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {alert.message}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* User Account Capsule */}
           {user && (
