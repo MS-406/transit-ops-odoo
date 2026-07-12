@@ -39,7 +39,7 @@ async def get_fuel_efficiency(
         results.append(FuelEfficiencyOut(
             name=v.registration_number,
             efficiency=round(eff, 2),
-            model=v.model
+            model=v.name_model
         ))
     return results
 

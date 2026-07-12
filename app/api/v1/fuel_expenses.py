@@ -34,7 +34,7 @@ async def list_fuel_logs(
             id=log.id,
             vehicle_id=log.vehicle_id,
             vehicle_reg=log.vehicle.registration_number if log.vehicle else "N/A",
-            vehicle_model=log.vehicle.model if log.vehicle else "Unknown",
+            vehicle_model=log.vehicle.name_model if log.vehicle else "Unknown",
             liters=log.liters,
             cost=log.cost,
             date=log.log_date
@@ -59,7 +59,7 @@ async def create_fuel_log(
         id=log.id,
         vehicle_id=log.vehicle_id,
         vehicle_reg=log.vehicle.registration_number if log.vehicle else "N/A",
-        vehicle_model=log.vehicle.model if log.vehicle else "Unknown",
+        vehicle_model=log.vehicle.name_model if log.vehicle else "Unknown",
         liters=log.liters,
         cost=log.cost,
         date=log.log_date
