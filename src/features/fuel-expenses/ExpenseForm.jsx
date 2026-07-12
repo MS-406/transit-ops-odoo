@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { parseISO, isAfter } from 'date-fns';
 import toast from 'react-hot-toast';
 
-export const ExpenseForm = ({ isOpen, onClose }) => {
+export const ExpenseForm = ({ isOpen, onClose, onSuccess, initialVehicleId = '', initialDescription = '' }) => {
   const queryClient = useQueryClient();
   const maxDate = '2026-07-12';
 
@@ -23,10 +23,10 @@ export const ExpenseForm = ({ isOpen, onClose }) => {
   } = useForm({
     defaultValues: {
       category: 'Tolls',
-      description: '',
+      description: initialDescription,
       cost: '',
       date: maxDate,
-      vehicle_id: ''
+      vehicle_id: initialVehicleId
     }
   });
 
@@ -41,13 +41,13 @@ export const ExpenseForm = ({ isOpen, onClose }) => {
     if (isOpen) {
       reset({
         category: 'Tolls',
-        description: '',
+        description: initialDescription,
         cost: '',
         date: maxDate,
-        vehicle_id: ''
+        vehicle_id: initialVehicleId
       });
     }
-  }, [isOpen, reset]);
+  }, [isOpen, reset, initialVehicleId, initialDescription]);
 
   // Create Expense mutation
   const createMutation = useMutation({
@@ -56,6 +56,7 @@ export const ExpenseForm = ({ isOpen, onClose }) => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       toast.success('Expense logged successfully!');
       onClose();
+      if (onSuccess) onSuccess();
     },
     onError: (err) => {
       toast.error(err.message || 'Failed to log expense.');
@@ -64,8 +65,11 @@ export const ExpenseForm = ({ isOpen, onClose }) => {
 
   const onSubmit = (data) => {
     createMutation.mutate({
-      ...data,
-      cost: parseFloat(data.cost)
+      type: data.category,
+      description: data.description,
+      amount: parseFloat(data.cost),
+      log_date: data.date,
+      vehicle_id: data.vehicle_id ? parseInt(data.vehicle_id, 10) : null
     });
   };
 

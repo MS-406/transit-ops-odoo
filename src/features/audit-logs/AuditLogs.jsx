@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { auditLogger } from '../../utils/auditLogger';
-import { Shield, Search, Calendar, User, Clock, FilterX } from 'lucide-react';
+import { Shield, Search, Calendar, User, Clock, FilterX, Loader2 } from 'lucide-react';
 
 export const AuditLogs = () => {
-  const [logs, setLogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    // Load logs on mount
-    const fetchLogs = async () => {
-      const data = await auditLogger.getLogs();
-      setLogs(data);
-    };
-    fetchLogs();
-  }, []);
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ['audit-logs'],
+    queryFn: () => auditLogger.getLogs()
+  });
 
   const handleClear = () => {
     setSearchTerm('');
@@ -84,7 +79,11 @@ export const AuditLogs = () => {
       </Card>
 
       {/* Audit table logs */}
-      {filteredLogs.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center py-24">
+          <Loader2 className="animate-spin text-uber-black" size={32} />
+        </div>
+      ) : filteredLogs.length === 0 ? (
         <Card className="py-16 text-center">
           <Shield size={36} className="text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-bold text-uber-black uppercase">No Audit Matches</h3>

@@ -10,6 +10,7 @@ from app.models.trip import Trip
 from app.models.vehicle import Vehicle
 from app.models.driver import Driver
 from app.models.user import User
+from app.models.bonus import AuditLog
 from app.schemas.trip import TripCreate, TripUpdate, TripOut, TripCompleteRequest
 from app.core.deps import get_current_user, require_role
 from app.core.exceptions import APIException
@@ -166,9 +167,20 @@ async def dispatch_trip(
     vehicle.status = "On Trip"
     driver.status = "On Trip"
     
+    # Generate audit log
+    audit_log = AuditLog(
+        user_id=current_user.id,
+        action="DISPATCH_TRIP",
+        entity_type="Trip",
+        entity_id=trip.id,
+        metadata_json={"details": f"Dispatched Trip #{trip.id} with Vehicle {vehicle.registration_number}"},
+        created_at=datetime.utcnow()
+    )
+    
     db.add(trip)
     db.add(vehicle)
     db.add(driver)
+    db.add(audit_log)
     await db.commit()
     
     result = await db.execute(
@@ -220,18 +232,39 @@ async def complete_trip(
     
     if payload.fuel_consumed > 0:
         from app.models.fuel import FuelLog
+        from app.models.expense import Expense
+        cost = payload.fuel_consumed * 1.5
         fuel_log = FuelLog(
             vehicle_id=vehicle.id,
             trip_id=trip.id,
             log_date=datetime.utcnow(),
             liters=payload.fuel_consumed,
-            cost=payload.fuel_consumed * 1.5
+            cost=cost
+        )
+        expense = Expense(
+            vehicle_id=vehicle.id,
+            type="fuel",
+            amount=cost,
+            description=f"Fuel for completed Trip #{trip.id} ({payload.fuel_consumed}L)",
+            log_date=datetime.utcnow()
         )
         db.add(fuel_log)
+        db.add(expense)
+        
+    # Generate audit log
+    audit_log = AuditLog(
+        user_id=current_user.id,
+        action="COMPLETE_TRIP",
+        entity_type="Trip",
+        entity_id=trip.id,
+        metadata_json={"details": f"Completed Trip #{trip.id} with distance {actual_distance}km"},
+        created_at=datetime.utcnow()
+    )
         
     db.add(trip)
     db.add(vehicle)
     db.add(driver)
+    db.add(audit_log)
     await db.commit()
     
     result = await db.execute(
@@ -245,7 +278,7 @@ async def complete_trip(
 async def cancel_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher", "admin"]))
+    current_user: User = Depends(require_role(["dispatcher", "driver", "admin"]))
 ):
     """Cancel a trip. Transitions Draft/Dispatched -> Cancelled."""
     # Lock the trip
@@ -275,6 +308,17 @@ async def cancel_trip(
         driver.status = "Available"
         db.add(vehicle)
         db.add(driver)
+        
+    # Generate audit log
+    audit_log = AuditLog(
+        user_id=current_user.id,
+        action="CANCEL_TRIP",
+        entity_type="Trip",
+        entity_id=trip.id,
+        metadata_json={"details": f"Cancelled/Rejected Trip #{trip.id}"},
+        created_at=datetime.utcnow()
+    )
+    db.add(audit_log)
         
     await db.commit()
     

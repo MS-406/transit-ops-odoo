@@ -16,6 +16,12 @@ The goal of this project is to provide a single pane of glass for transport logi
 - **Fuel & Expenses**: Log fuel consumption and calculate operational costs.
 - **Audit Logs**: Maintain a secure, tamper-proof history of critical system actions.
 
+### 🌟 Extraordinary Enhancements
+- **Advanced Trip Workflows**: Comprehensive lifecycle management including Dispatching, Completing, Canceling, and Rejecting trips with strict real-time state validations.
+- **Driver Empowerment**: A dedicated driver portal allowing drivers to manage their own dispatched trips, complete journeys, and immediately log associated data, bridging the gap between the road and the back-office.
+- **Smart Expense Integration**: Seamlessly connects Trip completion with the Fuel & Expenses ledger. Fuel costs are auto-calculated and logged, and a smart persistent banner instantly reminds drivers to log pending toll/maintenance expenses right after a trip finishes.
+- **Real-Time Automated Data Pipelines**: Fleet, Trips, Fuel, and Audit logs interact with live data natively. Completing a trip automatically frees up the vehicle, updates its odometer, logs fuel consumption to the unified ledger, and generates immutable audit trails—all without any hardcoded mock data.
+
 ### Technology Stack
 - **Frontend**: React, Vite, Tailwind CSS, Zustand (State Management), React Router, React Query.
 - **Backend**: Python, FastAPI, SQLAlchemy (Async), Alembic (Migrations), PostgreSQL.

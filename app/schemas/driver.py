@@ -2,6 +2,15 @@ from typing import Optional
 from datetime import datetime, date
 from pydantic import BaseModel, ConfigDict, Field
 
+class DriverTripOut(BaseModel):
+    id: int
+    source: str
+    destination: str
+    status: str
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class DriverBase(BaseModel):
     name: str
     license_number: str = "N/A"
@@ -31,5 +40,6 @@ class DriverOut(DriverBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    trip_history: Optional[list[DriverTripOut]] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)

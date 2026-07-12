@@ -3,6 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, exc, or_
+from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.models.driver import Driver
@@ -46,10 +47,17 @@ async def get_driver(
     current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Get a specific driver by ID."""
-    result = await db.execute(select(Driver).where(Driver.id == driver_id))
+    result = await db.execute(
+        select(Driver)
+        .options(selectinload(Driver.trips))
+        .where(Driver.id == driver_id)
+    )
     driver = result.scalars().first()
     if not driver:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found", code="NOT_FOUND")
+    
+    # Map for Pydantic schema
+    driver.trip_history = driver.trips
     return driver
 
 @router.post("", response_model=DriverOut, status_code=status.HTTP_201_CREATED)

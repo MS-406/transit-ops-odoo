@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { expensesApi } from '../../api/expenses';
 import { vehiclesApi } from '../../api/vehicles';
+import { tripsApi } from '../../api/trips';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -18,12 +19,17 @@ import {
   Loader2,
   Calendar,
   FilterX,
-  CreditCard
+  CreditCard,
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 export const FuelExpensesList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
+  
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
 
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -55,6 +61,16 @@ export const FuelExpensesList = () => {
     queryFn: () => vehiclesApi.getVehicles(),
     select: (res) => res.data
   });
+
+  // Query Completed Trips to find the most recent one
+  const { data: completedTrips } = useQuery({
+    queryKey: ['trips', { status: 'Completed' }],
+    queryFn: () => tripsApi.getTrips(),
+    select: (res) => res.data.filter(t => t.status === 'Completed').sort((a,b) => new Date(b.updated_at || b.id) - new Date(a.updated_at || a.id))
+  });
+  
+  const recentTrip = completedTrips?.length > 0 ? completedTrips[0] : null;
+  const showRecentTripBanner = recentTrip && !isBannerDismissed;
 
   const clearFilters = () => {
     setSelectedVehicle('');
@@ -165,6 +181,40 @@ export const FuelExpensesList = () => {
         )}
       </div>
 
+      {/* Recent Trip Reminder Banner */}
+      {showRecentTripBanner && recentTrip && (
+        <Card className="mb-8 border-l-4 border-l-uber-blue bg-blue-50/50 shadow-sm relative overflow-hidden">
+          <button 
+            onClick={() => setIsBannerDismissed(true)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pr-8">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-100 p-2.5 rounded-full text-uber-blue shrink-0 mt-1 sm:mt-0">
+                <AlertCircle size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-uber-black">Trip #{recentTrip.id} Completed</h3>
+                <p className="text-sm text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                  Fuel cost has been auto-logged to this ledger. Please log any additional 
+                  trip-related expenses (e.g., tolls, food, lodging) associated with this trip 
+                  ({recentTrip.source} to {recentTrip.destination}, {recentTrip.vehicle_registration}).
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              onClick={() => setIsExpenseOpen(true)}
+              className="shrink-0 flex items-center gap-2 shadow-sm"
+            >
+              <Plus size={16} /> Log Trip Expense
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Filter Ledger Cards */}
       <Card className="mb-8">
         <div className="flex flex-col lg:flex-row items-center gap-4">
@@ -244,9 +294,9 @@ export const FuelExpensesList = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-uber-gray-300">
-                {filteredLedger.map((item) => (
+                {filteredLedger.map((item, index) => (
                   <tr
-                    key={item.id}
+                    key={`${item.category}-${item.id}-${index}`}
                     className="hover:bg-uber-gray-100/40 transition-colors duration-150"
                   >
                     <td className="py-4 px-6 text-gray-500 font-medium">
@@ -290,7 +340,13 @@ export const FuelExpensesList = () => {
       <FuelForm isOpen={isFuelOpen} onClose={() => setIsFuelOpen(false)} />
 
       {/* Log Expense Modal form */}
-      <ExpenseForm isOpen={isExpenseOpen} onClose={() => setIsExpenseOpen(false)} />
+      <ExpenseForm 
+        isOpen={isExpenseOpen} 
+        onClose={() => setIsExpenseOpen(false)} 
+        onSuccess={() => setIsBannerDismissed(true)}
+        initialVehicleId={recentTrip?.vehicle_id || ''}
+        initialDescription={recentTrip ? `Expense for Trip #${recentTrip.id} (${recentTrip.source} to ${recentTrip.destination}) - ${recentTrip.actual_distance || recentTrip.planned_distance} kms` : ''}
+      />
 
     </div>
   );

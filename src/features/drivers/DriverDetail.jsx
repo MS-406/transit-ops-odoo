@@ -192,13 +192,13 @@ export const DriverDetail = () => {
                 </div>
               ) : (
                 <div className="divide-y divide-uber-gray-300 text-xs">
-                  {driver.trip_history.map((tripId, index) => (
-                    <div key={index} className="py-4 flex items-center justify-between">
+                  {driver.trip_history.map((trip) => (
+                    <div key={trip.id} className="py-4 flex items-center justify-between">
                       <div>
-                        <span className="font-bold text-uber-black uppercase block">Trip #{tripId}</span>
-                        <span className="text-[10px] text-gray-400">Route: Nairobi depot &rarr; Mombasa Port</span>
+                        <span className="font-bold text-uber-black uppercase block">Trip #{trip.id}</span>
+                        <span className="text-[10px] text-gray-400">Route: {trip.source} &rarr; {trip.destination}</span>
                       </div>
-                      <Badge status="success">Completed</Badge>
+                      <Badge status={trip.status}>{trip.status}</Badge>
                     </div>
                   ))}
                 </div>

@@ -66,9 +66,10 @@ export const FuelForm = ({ isOpen, onClose }) => {
 
   const onSubmit = (data) => {
     createMutation.mutate({
-      ...data,
+      vehicle_id: parseInt(data.vehicle_id, 10),
       liters: parseFloat(data.liters),
-      cost: parseFloat(data.cost)
+      cost: parseFloat(data.cost),
+      log_date: data.date
     });
   };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tripsApi } from '../../api/trips';
 import { vehiclesApi } from '../../api/vehicles';
@@ -92,6 +93,7 @@ const CompleteTripModal = ({ isOpen, onClose, trip, vehicle, onSubmit, isSaving 
 
 export const TripBoard = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
@@ -128,6 +130,7 @@ export const TripBoard = () => {
       queryClient.invalidateQueries({ queryKey: ['trips'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
       toast.success('Trip successfully dispatched!');
     },
     onError: (err) => {
@@ -142,6 +145,7 @@ export const TripBoard = () => {
       queryClient.invalidateQueries({ queryKey: ['trips'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
       toast.success('Trip cancelled.');
     },
     onError: (err) => {
@@ -156,8 +160,12 @@ export const TripBoard = () => {
       queryClient.invalidateQueries({ queryKey: ['trips'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      toast.success('Trip logged as completed.');
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['fuel-logs'] });
+      toast.success('Trip completed! Fuel expenses auto-logged. Add any additional tolls or fees here.');
       setIsCompleteOpen(false);
+      navigate('/fuel-expenses', { state: { recentTrip: activeTrip } });
     },
     onError: (err) => {
       toast.error(err.response?.data?.detail || 'Failed to complete trip.');
@@ -296,15 +304,28 @@ export const TripBoard = () => {
                     {isAuthorized && !isReadOnly && (
                       <div className="flex gap-2 mt-1">
                         {trip.status === 'Draft' && (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="w-full py-1 text-[10px] flex items-center justify-center gap-1"
-                            onClick={() => dispatchMutation.mutate(trip.id)}
-                            disabled={dispatchMutation.isPending}
-                          >
-                            <Play size={10} /> Dispatch
-                          </Button>
+                          <>
+                            {!isDriver && (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="flex-1 py-1 text-[10px] flex items-center justify-center gap-1"
+                                onClick={() => dispatchMutation.mutate(trip.id)}
+                                disabled={dispatchMutation.isPending}
+                              >
+                                <Play size={10} /> Dispatch
+                              </Button>
+                            )}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className={`py-1 text-[10px] flex items-center justify-center gap-1 ${isDriver ? 'w-full' : 'px-3'}`}
+                              onClick={() => cancelMutation.mutate(trip.id)}
+                              disabled={cancelMutation.isPending}
+                            >
+                              <XCircle size={12} /> {isDriver ? 'Reject Dispatch' : ''}
+                            </Button>
+                          </>
                         )}
                         
                         {trip.status === 'Dispatched' && (
@@ -323,11 +344,12 @@ export const TripBoard = () => {
                             <Button
                               variant="danger"
                               size="sm"
-                              className="py-1 px-3 text-[10px] flex items-center justify-center"
+                              className="py-1 px-3 text-[10px] flex items-center justify-center gap-1"
                               onClick={() => cancelMutation.mutate(trip.id)}
                               disabled={cancelMutation.isPending}
+                              title="Cancel / Reject Trip"
                             >
-                              <XCircle size={12} />
+                              <XCircle size={12} /> {isDriver ? 'Reject' : ''}
                             </Button>
                           </>
                         )}
