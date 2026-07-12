@@ -1,12 +1,15 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exc
+from sqlalchemy import select, exc, func
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.models.vehicle import Vehicle
 from app.models.user import User
+from app.models.fuel import FuelLog
+from app.models.maintenance import MaintenanceLog
+from app.models.expense import Expense
 from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut
 from app.core.deps import get_current_user, require_role
 from app.core.exceptions import APIException
@@ -133,3 +136,33 @@ async def delete_vehicle(
             detail="Cannot delete vehicle because it is referenced in trips or logs.",
             code="FOREIGN_KEY_VIOLATION"
         )
+
+@router.get("/{vehicle_id}/cost-rollup")
+async def get_vehicle_cost_rollup(
+    vehicle_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+):
+    """Get total cost rollup (Fuel + Maintenance + Expenses) for a vehicle."""
+    result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
+    if not result.scalars().first():
+        raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found", code="NOT_FOUND")
+        
+    fuel_res = await db.execute(select(func.sum(FuelLog.cost)).where(FuelLog.vehicle_id == vehicle_id))
+    total_fuel_cost = fuel_res.scalar() or 0.0
+    
+    maint_res = await db.execute(select(func.sum(MaintenanceLog.cost)).where(MaintenanceLog.vehicle_id == vehicle_id))
+    total_maintenance_cost = maint_res.scalar() or 0.0
+    
+    exp_res = await db.execute(select(func.sum(Expense.amount)).where(Expense.vehicle_id == vehicle_id))
+    total_other_expenses = exp_res.scalar() or 0.0
+    
+    total_cost = total_fuel_cost + total_maintenance_cost + total_other_expenses
+    
+    return {
+        "vehicle_id": vehicle_id,
+        "total_fuel_cost": total_fuel_cost,
+        "total_maintenance_cost": total_maintenance_cost,
+        "total_other_expenses": total_other_expenses,
+        "total_cost": total_cost
+    }

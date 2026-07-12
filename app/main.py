@@ -7,6 +7,7 @@ from app.api.v1.vehicles import router as vehicles_router
 from app.api.v1.drivers import router as drivers_router
 from app.api.v1.trips import router as trips_router
 from app.api.v1.maintenance import router as maintenance_router
+from app.api.v1.fuel_expenses import router as fuel_expenses_router
 from app.core.exceptions import register_exception_handlers
 
 app = FastAPI(
@@ -34,6 +35,7 @@ app.include_router(vehicles_router, prefix="/api", tags=["Vehicles"])
 app.include_router(drivers_router, prefix="/api", tags=["Drivers"])
 app.include_router(trips_router, prefix="/api", tags=["Trips"])
 app.include_router(maintenance_router, prefix="/api", tags=["Maintenance"])
+app.include_router(fuel_expenses_router, prefix="/api", tags=["Fuel & Expenses"])
 
 if __name__ == "__main__":
     import uvicorn
