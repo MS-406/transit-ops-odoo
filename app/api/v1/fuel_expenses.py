@@ -37,7 +37,7 @@ async def list_fuel_logs(
             vehicle_model=log.vehicle.name_model if log.vehicle else "Unknown",
             liters=log.liters,
             cost=log.cost,
-            date=log.log_date
+            date=log.log_date.date() if hasattr(log.log_date, 'date') else log.log_date
         ))
     return out
 
@@ -62,7 +62,7 @@ async def create_fuel_log(
         vehicle_model=log.vehicle.name_model if log.vehicle else "Unknown",
         liters=log.liters,
         cost=log.cost,
-        date=log.log_date
+        date=log.log_date.date() if hasattr(log.log_date, 'date') else log.log_date
     )
 
 @router.get("/expenses", response_model=List[ExpenseOut])
@@ -86,7 +86,7 @@ async def list_expenses(
     for exp in expenses:
         out.append(ExpenseOut(
             id=exp.id,
-            date=exp.log_date,
+            date=exp.log_date.date() if hasattr(exp.log_date, 'date') else exp.log_date,
             category=exp.type,
             cost=exp.amount,
             vehicle_id=exp.vehicle_id,
@@ -111,7 +111,7 @@ async def create_expense(
     
     return ExpenseOut(
         id=exp.id,
-        date=exp.log_date,
+        date=exp.log_date.date() if hasattr(exp.log_date, 'date') else exp.log_date,
         category=exp.type,
         cost=exp.amount,
         vehicle_id=exp.vehicle_id,
