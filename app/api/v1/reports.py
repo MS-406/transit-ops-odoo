@@ -48,18 +48,37 @@ async def get_utilization(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
-    """Get utilization report (simulated 7 days for the chart)."""
-    # Simulating 7 days of historical utilization rates for the chart as the frontend expects
+    """Get actual utilization report based on 7 days of trip data."""
+    v_res = await db.execute(select(func.count(Vehicle.id)).where(Vehicle.status != "Retired"))
+    total_vehicles = v_res.scalar() or 0
+    
+    t_res = await db.execute(select(Trip).where(Trip.status != "Draft"))
+    trips = t_res.scalars().all()
+    
     from datetime import datetime, timedelta
     results = []
-    base_rate = 75
+    
     for i in range(6, -1, -1):
-        dt = datetime.now() - timedelta(days=i)
-        rate = base_rate + (i * 2) % 15 # Pseudo-random fluctuation
+        target_date = datetime.utcnow() - timedelta(days=i)
+        day_start = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = target_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        active_vehicles = set()
+        for t in trips:
+            if t.dispatched_at and t.dispatched_at <= day_end:
+                end_time = t.completed_at or t.cancelled_at or datetime.utcnow()
+                if end_time >= day_start:
+                    active_vehicles.add(t.vehicle_id)
+                    
+        rate = 0.0
+        if total_vehicles > 0:
+            rate = (len(active_vehicles) / total_vehicles) * 100.0
+            
         results.append(UtilizationOut(
-            date=dt.strftime('%m/%d'),
-            rate=float(rate)
+            date=target_date.strftime('%m/%d'),
+            rate=round(rate, 2)
         ))
+        
     return results
 
 @router.get("/cost", response_model=List[CostReportOut])
