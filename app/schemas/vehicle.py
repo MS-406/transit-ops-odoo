@@ -1,6 +1,7 @@
 from typing import Optional
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+import datetime
+from typing import List
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class VehicleBase(BaseModel):
     registration_number: str
@@ -31,7 +32,41 @@ class VehicleUpdate(BaseModel):
 
 class VehicleOut(VehicleBase):
     id: int
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+class SimpleFuelLog(BaseModel):
+    liters: float
+    cost: float
+    date: datetime.date
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def parse_date(cls, v):
+        if hasattr(v, 'date'):
+            return v.date()
+        return v
+
+class SimpleMaintenanceLog(BaseModel):
+    description: str
+    cost: float
+    date: datetime.date
+    status: str
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def parse_date(cls, v):
+        if hasattr(v, 'date'):
+            return v.date()
+        return v
+
+class VehicleDetailOut(VehicleOut):
+    fuel_efficiency: float
+    fuel_logs: List[SimpleFuelLog] = []
+    maintenance_records: List[SimpleMaintenanceLog] = []
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+

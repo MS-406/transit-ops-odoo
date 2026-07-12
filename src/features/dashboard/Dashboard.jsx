@@ -181,7 +181,7 @@ export const Dashboard = () => {
           <Card>
             <span className="text-[10px] uppercase font-bold text-gray-400">Fleet Utilization</span>
             <div className="text-3xl font-extrabold mt-1 text-uber-blue">
-              {kpis.utilizationRate}%
+              {Number(kpis.utilizationRate || 0).toFixed(2)}%
             </div>
             <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-2 flex items-center gap-1">
               <TrendingUp size={12} className="text-uber-blue" />

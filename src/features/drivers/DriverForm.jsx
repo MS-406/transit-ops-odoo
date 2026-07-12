@@ -165,6 +165,7 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
             <Input
               label="License Expiry Date"
               type="date"
+              min={new Date().toISOString().split('T')[0]}
               error={errors.license_expiry?.message}
               disabled={isSaving}
               {...register('license_expiry', { required: 'License expiry date is required' })}

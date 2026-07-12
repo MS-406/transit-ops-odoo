@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.fuel import FuelLog
 from app.models.maintenance import MaintenanceLog
 from app.models.expense import Expense
-from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut
+from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleOut, VehicleDetailOut
 from app.core.deps import get_current_user, require_role
 from app.core.exceptions import APIException
 
@@ -32,18 +32,54 @@ async def list_vehicles(
     result = await db.execute(query)
     return result.scalars().all()
 
-@router.get("/{vehicle_id}", response_model=VehicleOut)
+@router.get("/{vehicle_id}", response_model=VehicleDetailOut)
 async def get_vehicle(
     vehicle_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst", "admin"]))
 ):
     """Get a specific vehicle by ID."""
-    result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
+    result = await db.execute(
+        select(Vehicle)
+        .options(selectinload(Vehicle.fuel_logs), selectinload(Vehicle.maintenance_logs))
+        .where(Vehicle.id == vehicle_id)
+    )
     vehicle = result.scalars().first()
     if not vehicle:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehicle not found", code="NOT_FOUND")
-    return vehicle
+        
+    total_liters = sum(log.liters for log in vehicle.fuel_logs)
+    fuel_efficiency = round((vehicle.odometer / total_liters), 2) if total_liters > 0 else 0.0
+    
+    return {
+        "id": vehicle.id,
+        "registration_number": vehicle.registration_number,
+        "model": vehicle.name_model,
+        "type": vehicle.type,
+        "capacity": vehicle.max_load_capacity,
+        "odometer": vehicle.odometer,
+        "acquisition_cost": vehicle.acquisition_cost,
+        "status": vehicle.status,
+        "region": vehicle.region,
+        "created_at": vehicle.created_at,
+        "updated_at": vehicle.updated_at,
+        "fuel_efficiency": fuel_efficiency,
+        "fuel_logs": [
+            {
+                "liters": log.liters,
+                "cost": log.cost,
+                "date": log.log_date.date() if hasattr(log.log_date, 'date') else log.log_date
+            } for log in vehicle.fuel_logs
+        ],
+        "maintenance_records": [
+            {
+                "description": log.description,
+                "cost": log.cost,
+                "date": log.opened_at.date() if hasattr(log.opened_at, 'date') else log.opened_at,
+                "status": "Open" if log.is_active else "Completed"
+            } for log in vehicle.maintenance_logs
+        ]
+    }
 
 @router.post("", response_model=VehicleOut, status_code=status.HTTP_201_CREATED)
 async def create_vehicle(
