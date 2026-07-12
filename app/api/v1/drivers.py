@@ -46,7 +46,7 @@ async def get_driver(
 async def create_driver(
     payload: DriverCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager"]))
 ):
     """Create a new driver. Restricted to fleet managers."""
     valid_statuses = ["Available", "On Trip", "Suspended"]
@@ -83,20 +83,13 @@ async def update_driver(
     driver_id: int,
     payload: DriverUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager"]))
 ):
-    """Update a driver. Restricted to fleet managers and safety officers."""
+    """Update a driver. Restricted to fleet managers."""
     result = await db.execute(select(Driver).where(Driver.id == driver_id))
     driver = result.scalars().first()
     if not driver:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found", code="NOT_FOUND")
-    
-    if payload.safety_score is not None and current_user.role.name != "safety_officer":
-        raise APIException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only safety officers can update a driver's safety score.",
-            code="INSUFFICIENT_PERMISSIONS"
-        )
     
     if payload.status:
         valid_statuses = ["Available", "On Trip", "Suspended"]
@@ -135,7 +128,7 @@ async def update_driver(
 async def delete_driver(
     driver_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager"]))
 ):
     """Delete a driver. Restricted to fleet managers."""
     result = await db.execute(select(Driver).where(Driver.id == driver_id))
