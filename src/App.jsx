@@ -15,6 +15,8 @@ import { DriverDetail } from './features/drivers/DriverDetail';
 import { TripBoard } from './features/trips/TripBoard';
 import { MaintenanceList } from './features/maintenance/MaintenanceList';
 import { FuelExpensesList } from './features/fuel-expenses/FuelExpensesList';
+import { Dashboard } from './features/dashboard/Dashboard';
+import { Reports } from './features/reports/Reports';
 import {
   TrendingUp,
   AlertTriangle,
@@ -48,101 +50,7 @@ const PageHeader = ({ title, category = 'Platform' }) => (
   </div>
 );
 
-// Placeholder: Dashboard
-const DashboardPage = () => {
-  const { user } = useAuthStore();
-  return (
-    <div className="animate-fade-in text-left">
-      <PageHeader title="Dashboard" category="Analytics" />
-      
-      {/* Dark KPI Banner Section */}
-      <div className="bg-uber-black text-uber-white rounded-2xl p-6 md:p-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-uber-gray-900">
-        <div>
-          <span className="text-[10px] uppercase tracking-widest text-uber-green font-extrabold">Active Session Overview</span>
-          <h3 className="text-2xl font-bold mt-1">Welcome back, {user?.name || 'Operator'}</h3>
-          <p className="text-gray-400 text-xs mt-1">Fleet Operations running smoothly. 2 alerts require safety review.</p>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="success" size="sm">Dispatch Trip</Button>
-          <Button variant="secondary" size="sm" className="bg-uber-gray-900 border-none text-uber-white hover:bg-uber-gray-900/80">View Alerts</Button>
-        </div>
-      </div>
-
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <span className="text-[10px] uppercase font-bold text-gray-400">Total Active Vehicles</span>
-          <div className="text-3xl font-extrabold mt-1">32 / 40</div>
-          <div className="text-[10px] text-uber-green font-bold uppercase tracking-wider mt-2 flex items-center gap-1">
-            <TrendingUp size={12} /> 80% Utilization rate
-          </div>
-        </Card>
-        <Card>
-          <span className="text-[10px] uppercase font-bold text-gray-400">Active Dispatches</span>
-          <div className="text-3xl font-extrabold mt-1">14 Trips</div>
-          <div className="text-[10px] text-uber-blue font-bold uppercase tracking-wider mt-2">
-            6 in-transit | 8 planned
-          </div>
-        </Card>
-        <Card>
-          <span className="text-[10px] uppercase font-bold text-gray-400">Vehicles in Shop</span>
-          <div className="text-3xl font-extrabold mt-1 text-uber-amber">4</div>
-          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-2">
-            2 scheduled for release today
-          </div>
-        </Card>
-        <Card>
-          <span className="text-[10px] uppercase font-bold text-gray-400">Compliance score</span>
-          <div className="text-3xl font-extrabold mt-1 text-uber-green">98.4%</div>
-          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-2">
-            Excellent driver performance
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <h4 className="font-extrabold uppercase text-xs tracking-wider text-gray-500">Live Dispatched Routes Overview</h4>
-          </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center bg-gray-50 border border-dashed border-gray-200 rounded-xl text-xs text-gray-400">
-            [Interactive Route Map Simulator will render here in Phase 5]
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <h4 className="font-extrabold uppercase text-xs tracking-wider text-gray-500">Recent Operational Logs</h4>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y divide-uber-gray-300 text-xs">
-              <li className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="font-bold text-uber-black">Scania R450 entered maintenance</p>
-                  <p className="text-[10px] text-gray-400">Odometer: 142,500 km</p>
-                </div>
-                <Badge status="maintenance">In Shop</Badge>
-              </li>
-              <li className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="font-bold text-uber-black">Trip #TR-872 dispatched</p>
-                  <p className="text-[10px] text-gray-400">Cargo: Electronics (12 tons)</p>
-                </div>
-                <Badge status="dispatched">On Trip</Badge>
-              </li>
-              <li className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="font-bold text-uber-black">Driver John Doe Safety Flag</p>
-                  <p className="text-[10px] text-gray-400">Hard braking recorded near Hub A</p>
-                </div>
-                <Badge status="suspended">Alert</Badge>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
+// Dashboard features loaded from features/dashboard/
 
 // Driver components are loaded from features/drivers/
 
@@ -152,38 +60,7 @@ const DashboardPage = () => {
 
 // Fuel & Expenses features loaded from features/fuel-expenses/
 
-// Placeholder: Reports
-const ReportsPage = () => (
-  <div className="text-left">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <span className="text-xs uppercase font-extrabold tracking-widest text-gray-500">Analytics / Reporting</span>
-        <h2 className="text-3xl font-extrabold tracking-tight mt-1 text-uber-black uppercase">Reports & Export</h2>
-      </div>
-      <div className="flex gap-3">
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <FileSpreadsheet size={16} /> Export CSV
-        </Button>
-        <Button variant="primary" size="sm" className="flex items-center gap-2">
-          <Download size={16} /> Export PDF
-        </Button>
-      </div>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card>
-        <h4 className="text-xs uppercase font-bold text-gray-400">Total Fleet Cost rollup</h4>
-        <div className="text-4xl font-extrabold text-uber-black mt-2">$24,500.00</div>
-        <p className="text-xs text-gray-400 mt-2">Aggregated from Fuel logs + maintenance transactions</p>
-      </Card>
-      <Card>
-        <h4 className="text-xs uppercase font-bold text-gray-400">Fleet Fuel efficiency</h4>
-        <div className="text-4xl font-extrabold text-uber-blue mt-2">6.2 km/L</div>
-        <p className="text-xs text-gray-400 mt-2">Average efficiency calculated across active route logs</p>
-      </Card>
-    </div>
-  </div>
-);
+// Reports features loaded from features/reports/
 
 // Placeholder: Settings
 const SettingsPage = () => (
@@ -244,7 +121,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             
             {/* Dashboard and Settings (All roles authorized) */}
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<SettingsPage />} />
 
             {/* Vehicles (Read-only for others, CRUD role checks are custom) */}
@@ -264,7 +141,7 @@ function App() {
             {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
             <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
               <Route path="/fuel-expenses" element={<FuelExpensesList />} />
-              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/reports" element={<Reports />} />
             </Route>
 
           </Route>
