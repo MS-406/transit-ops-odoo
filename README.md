@@ -17,6 +17,9 @@ The goal of this project is to provide a single pane of glass for transport logi
 - **Audit Logs**: Maintain a secure, tamper-proof history of critical system actions.
 
 ### 🌟 Extraordinary Enhancements
+- **Smart Operational Insights Panel**: Dynamic dashboard cards calculating key metrics natively from live database data, including top performing drivers/vehicles, best fuel efficiency, highest maintenance costs, and total fleet utilization.
+- **Automated Driver Compliance Alerts**: Real-time driver license expiry monitoring with color-coded warning badges (valid, <30 days, <7 days, expired) actively integrated into the dashboard and driver management portal to ensure strict legal compliance.
+- **Advanced Dashboard Analytics**: Rich visualization charts detailing vehicle/driver status distributions, monthly fuel & maintenance expenses, and precise operational costs per vehicle, complete with historical trend indicators (↑/↓).
 - **Advanced Trip Workflows**: Comprehensive lifecycle management including Dispatching, Completing, Canceling, and Rejecting trips with strict real-time state validations.
 - **Driver Empowerment**: A dedicated driver portal allowing drivers to manage their own dispatched trips, complete journeys, and immediately log associated data, bridging the gap between the road and the back-office.
 - **Smart Expense Integration**: Seamlessly connects Trip completion with the Fuel & Expenses ledger. Fuel costs are auto-calculated and logged, and a smart persistent banner instantly reminds drivers to log pending toll/maintenance expenses right after a trip finishes.
