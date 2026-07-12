@@ -12,6 +12,7 @@ import { VehicleList } from './features/vehicles/VehicleList';
 import { VehicleDetail } from './features/vehicles/VehicleDetail';
 import { DriverList } from './features/drivers/DriverList';
 import { DriverDetail } from './features/drivers/DriverDetail';
+import { TripBoard } from './features/trips/TripBoard';
 import {
   TrendingUp,
   AlertTriangle,
@@ -143,73 +144,7 @@ const DashboardPage = () => {
 
 // Driver components are loaded from features/drivers/
 
-// Placeholder: Trips
-const TripsPage = () => (
-  <div className="text-left">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <span className="text-xs uppercase font-extrabold tracking-widest text-gray-500">Board / Dispatch Control</span>
-        <h2 className="text-3xl font-extrabold tracking-tight mt-1 text-uber-black uppercase">Trip Board</h2>
-      </div>
-      <Button variant="primary" size="sm" className="flex items-center gap-2">
-        <Plus size={16} /> Dispatch New Trip
-      </Button>
-    </div>
-
-    {/* Kanban Columns Grid */}
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      
-      {/* Draft Column */}
-      <div className="bg-gray-50 border border-uber-gray-300 rounded-2xl p-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b border-uber-gray-300">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-gray-500">Drafts</span>
-          <Badge status="draft">2</Badge>
-        </div>
-        <Card className="p-4" hoverable>
-          <div className="text-xs font-bold text-uber-black">TR-990 — Cargo Dry Goods</div>
-          <div className="text-[10px] text-gray-500 mt-1">Route: Nairobi &rarr; Mombasa</div>
-          <div className="text-[10px] text-gray-400 mt-2 font-semibold">Weight: 8.5 Tons</div>
-        </Card>
-      </div>
-
-      {/* Dispatched Column */}
-      <div className="bg-gray-50 border border-uber-gray-300 rounded-2xl p-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b border-uber-gray-300">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-gray-500">Dispatched</span>
-          <Badge status="dispatched">1</Badge>
-        </div>
-        <Card className="p-4 border-l-4 border-l-uber-blue" hoverable>
-          <div className="text-xs font-bold text-uber-black">TR-872 — Electronics</div>
-          <div className="text-[10px] text-gray-500 mt-1">Vehicle: KCD 456B</div>
-          <div className="text-[10px] text-gray-400 mt-2 font-semibold">Driver: Jane Watson</div>
-        </Card>
-      </div>
-
-      {/* Completed Column */}
-      <div className="bg-gray-50 border border-uber-gray-300 rounded-2xl p-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b border-uber-gray-300">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-gray-500">Completed</span>
-          <Badge status="success">1</Badge>
-        </div>
-        <Card className="p-4 border-l-4 border-l-uber-green opacity-80" hoverable>
-          <div className="text-xs font-bold text-uber-black">TR-712 — Wheat Cargo</div>
-          <div className="text-[10px] text-gray-500 mt-1">Completed yesterday 16:30</div>
-          <div className="text-[10px] text-uber-green font-bold uppercase mt-2">Delivered</div>
-        </Card>
-      </div>
-
-      {/* Cancelled Column */}
-      <div className="bg-gray-50 border border-uber-gray-300 rounded-2xl p-4 flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b border-uber-gray-300">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-gray-500">Cancelled</span>
-          <Badge status="retired">0</Badge>
-        </div>
-        <div className="text-xs text-gray-400 italic text-center py-6">No cancelled trips</div>
-      </div>
-
-    </div>
-  </div>
-);
+// Trip board loaded from features/trips/
 
 // Placeholder: Maintenance
 const MaintenancePage = () => (
@@ -344,9 +279,9 @@ function App() {
             <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
               <Route path="/drivers" element={<DriverList />} />
               <Route path="/drivers/:id" element={<DriverDetail />} />
-              <Route path="/trips" element={<TripsPage />} />
-              <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
-              <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
+              <Route path="/trips" element={<TripBoard />} />
+              <Route path="/trips/new" element={<Navigate to="/trips" replace />} />
+              <Route path="/trips/:id" element={<Navigate to="/trips" replace />} />
               <Route path="/maintenance" element={<MaintenancePage />} />
             </Route>
 
