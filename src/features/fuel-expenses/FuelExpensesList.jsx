@@ -29,7 +29,21 @@ export const FuelExpensesList = () => {
   const location = useLocation();
   const { user } = useAuthStore();
   
-  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+  const [dismissedTrips, setDismissedTrips] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dismissedTrips');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const dismissRecentTrip = (tripId) => {
+    if (!tripId) return;
+    const updated = [...dismissedTrips, tripId];
+    setDismissedTrips(updated);
+    localStorage.setItem('dismissedTrips', JSON.stringify(updated));
+  };
 
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -70,7 +84,7 @@ export const FuelExpensesList = () => {
   });
   
   const recentTrip = completedTrips?.length > 0 ? completedTrips[0] : null;
-  const showRecentTripBanner = recentTrip && !isBannerDismissed;
+  const showRecentTripBanner = recentTrip && !dismissedTrips.includes(recentTrip.id);
 
   const clearFilters = () => {
     setSelectedVehicle('');
@@ -185,7 +199,7 @@ export const FuelExpensesList = () => {
       {showRecentTripBanner && recentTrip && (
         <Card className="mb-8 border-l-4 border-l-uber-blue bg-blue-50/50 shadow-sm relative overflow-hidden">
           <button 
-            onClick={() => setIsBannerDismissed(true)}
+            onClick={() => dismissRecentTrip(recentTrip?.id)}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X size={20} />
@@ -343,7 +357,7 @@ export const FuelExpensesList = () => {
       <ExpenseForm 
         isOpen={isExpenseOpen} 
         onClose={() => setIsExpenseOpen(false)} 
-        onSuccess={() => setIsBannerDismissed(true)}
+        onSuccess={() => dismissRecentTrip(recentTrip?.id)}
         initialVehicleId={recentTrip?.vehicle_id || ''}
         initialDescription={recentTrip ? `Expense for Trip #${recentTrip.id} (${recentTrip.source} to ${recentTrip.destination}) - ${recentTrip.actual_distance || recentTrip.planned_distance} kms` : ''}
       />
