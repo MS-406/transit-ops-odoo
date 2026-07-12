@@ -64,7 +64,10 @@ const PageHeader = ({ title, category = 'Platform' }) => (
 // Reports features loaded from features/reports/
 
 // Placeholder: Settings
-const SettingsPage = () => (
+const SettingsPage = () => {
+  const user = useAuthStore((state) => state.user);
+  
+  return (
   <div className="text-left">
     <PageHeader title="Settings" category="Administration" />
     <Card className="max-w-xl">
@@ -74,20 +77,21 @@ const SettingsPage = () => (
       <CardContent className="flex flex-col gap-4 text-xs">
         <div>
           <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Active Name</strong>
-          <p className="text-sm font-bold text-uber-black mt-1">Vedant Mandalka</p>
+          <p className="text-sm font-bold text-uber-black mt-1">{user?.name || 'Unknown'}</p>
         </div>
         <div>
           <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Email Address</strong>
-          <p className="text-sm font-semibold text-uber-black mt-1">admin@transitops.com</p>
+          <p className="text-sm font-semibold text-uber-black mt-1">{user?.email || 'unknown@example.com'}</p>
         </div>
         <div>
           <strong className="text-gray-500 uppercase tracking-wide text-[10px]">Access Level</strong>
-          <div className="mt-1"><Badge status="success">Fleet Manager</Badge></div>
+          <div className="mt-1"><Badge status="success">{user?.role || 'User'}</Badge></div>
         </div>
       </CardContent>
     </Card>
   </div>
-);
+  );
+};
 
 function App() {
   const { isInitialized, refreshSession } = useAuthStore();

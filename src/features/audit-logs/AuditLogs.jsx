@@ -11,7 +11,11 @@ export const AuditLogs = () => {
 
   useEffect(() => {
     // Load logs on mount
-    setLogs(auditLogger.getLogs());
+    const fetchLogs = async () => {
+      const data = await auditLogger.getLogs();
+      setLogs(data);
+    };
+    fetchLogs();
   }, []);
 
   const handleClear = () => {

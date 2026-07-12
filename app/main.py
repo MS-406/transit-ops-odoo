@@ -4,6 +4,7 @@ import app.db.base  # noqa: F401 — registers all models with SQLAlchemy (must 
 from app.api.v1.health import router as health_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.vehicles import router as vehicles_router
+from app.api.v1.audit import router as audit_router
 from app.api.v1.drivers import router as drivers_router
 from app.api.v1.trips import router as trips_router
 from app.api.v1.maintenance import router as maintenance_router
@@ -48,6 +49,7 @@ app.include_router(maintenance_router, prefix="/api", tags=["Maintenance"])
 app.include_router(fuel_expenses_router, prefix="/api", tags=["Fuel & Expenses"])
 app.include_router(dashboard_router, prefix="/api", tags=["Dashboard"])
 app.include_router(reports_router, prefix="/api", tags=["Reports"])
+app.include_router(audit_router, prefix="/api", tags=["Audit"])
 app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
 
 if __name__ == "__main__":
