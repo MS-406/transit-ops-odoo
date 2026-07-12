@@ -25,6 +25,16 @@ class User(Base):
     refresh_token: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
+    @property
+    def name(self) -> str:
+        return self.full_name
+        
+    @property
+    def role_name(self) -> str:
+        if self.role:
+            return self.role.name.replace("_", " ").title()
+        return "Unknown"
+
     # Relationships
     role: Mapped["Role"] = relationship("Role", back_populates="users")
     trips_created: Mapped[List["Trip"]] = relationship("Trip", back_populates="creator")

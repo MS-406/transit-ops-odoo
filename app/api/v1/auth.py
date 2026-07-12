@@ -14,11 +14,16 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 def _user_to_dict(user: User) -> dict:
     """Convert a SQLAlchemy User (with eager-loaded role) to a serializable dict."""
+    role_name = user.role.name if user.role else "unknown"
+    # Frontend expects display names like "Fleet Manager"
+    display_role = role_name.replace("_", " ").title() if role_name != "unknown" else role_name
+
     return {
         "id": user.id,
         "email": user.email,
         "full_name": user.full_name,
-        "role": user.role.name if user.role else "unknown",
+        "name": user.full_name,  # Frontend uses user?.name
+        "role": display_role,
     }
 
 @router.post("/login", response_model=TokenResponse)

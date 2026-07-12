@@ -1,12 +1,13 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 class UserOut(BaseModel):
     id: int
     email: EmailStr
     full_name: str
-    role: str
+    name: str
+    role: str = Field(alias="role_name")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 class LoginRequest(BaseModel):
     email: EmailStr
