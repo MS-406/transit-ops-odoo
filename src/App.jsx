@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './features/auth/Login';
 import { ProtectedRoute, RoleGuard } from './components/layout/ProtectedRoute';
 import { Card, CardHeader, CardContent } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Badge } from './components/ui/Badge';
 import { useAuthStore } from './store/authStore';
+import { VehicleList } from './features/vehicles/VehicleList';
+import { VehicleDetail } from './features/vehicles/VehicleDetail';
 import {
   TrendingUp,
   AlertTriangle,
@@ -15,6 +18,16 @@ import {
   Plus,
   Loader2
 } from 'lucide-react';
+
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 // Common breadcrumbs helper for placeholder pages
 const PageHeader = ({ title, category = 'Platform' }) => (
@@ -125,72 +138,6 @@ const DashboardPage = () => {
     </div>
   );
 };
-
-// Placeholder: Vehicles
-const VehiclesPage = () => (
-  <div className="text-left">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <span className="text-xs uppercase font-extrabold tracking-widest text-gray-500">Registry / Vehicles</span>
-        <h2 className="text-3xl font-extrabold tracking-tight mt-1 text-uber-black uppercase">Vehicles</h2>
-      </div>
-      <Button variant="primary" size="sm" className="flex items-center gap-2">
-        <Plus size={16} /> Add Vehicle
-      </Button>
-    </div>
-    
-    <Card>
-      <CardHeader>
-        <h4 className="font-bold text-xs uppercase text-gray-500 tracking-wider">Fleet Register Preview</h4>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="border-b border-uber-gray-300 text-gray-400 uppercase tracking-wider font-extrabold">
-                <th className="py-3 px-4">Reg Number</th>
-                <th className="py-3 px-4">Model & Type</th>
-                <th className="py-3 px-4">Current Driver</th>
-                <th className="py-3 px-4">Region</th>
-                <th className="py-3 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-uber-gray-300">
-              <tr className="hover:bg-gray-50 cursor-pointer">
-                <td className="py-4 px-4 font-bold text-uber-black">KCB 123A</td>
-                <td className="py-4 px-4">Scania R450 (Heavy Hauler)</td>
-                <td className="py-4 px-4 text-gray-600">John Doe</td>
-                <td className="py-4 px-4 text-gray-600">Nairobi East</td>
-                <td className="py-4 px-4"><Badge status="available">Available</Badge></td>
-              </tr>
-              <tr className="hover:bg-gray-50 cursor-pointer">
-                <td className="py-4 px-4 font-bold text-uber-black">KCD 456B</td>
-                <td className="py-4 px-4">Toyota Dyna (Box Body)</td>
-                <td className="py-4 px-4 text-gray-600">Peter Pan</td>
-                <td className="py-4 px-4 text-gray-600">Nairobi West</td>
-                <td className="py-4 px-4"><Badge status="on trip">On Trip</Badge></td>
-              </tr>
-              <tr className="hover:bg-gray-50 cursor-pointer">
-                <td className="py-4 px-4 font-bold text-uber-black">KCE 789C</td>
-                <td className="py-4 px-4">Mercedes Actros (Dry Van)</td>
-                <td className="py-4 px-4 text-gray-600">Alice Smith</td>
-                <td className="py-4 px-4 text-gray-600">Mombasa Port</td>
-                <td className="py-4 px-4"><Badge status="maintenance">In Shop</Badge></td>
-              </tr>
-              <tr className="hover:bg-gray-50 cursor-pointer">
-                <td className="py-4 px-4 font-bold text-uber-black">KAA 001Z</td>
-                <td className="py-4 px-4">Volvo FH16 (Flatbed)</td>
-                <td className="py-4 px-4 text-gray-600">None</td>
-                <td className="py-4 px-4 text-gray-600">Out of Service</td>
-                <td className="py-4 px-4"><Badge status="retired">Retired</Badge></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
 
 // Placeholder: Drivers
 const DriversPage = () => (
@@ -432,47 +379,49 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      {/* Toast notifications handler */}
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        {/* Toast notifications handler */}
+        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
 
-      <Routes>
-        {/* Authentication View */}
-        <Route path="/login" element={<Login />} />
+        <Routes>
+          {/* Authentication View */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Access Controlled Shell Routes */}
-        <Route element={<ProtectedRoute />}>
-          
-          {/* Dashboard and Settings (All roles authorized) */}
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          {/* Access Controlled Shell Routes */}
+          <Route element={<ProtectedRoute />}>
+            
+            {/* Dashboard and Settings (All roles authorized) */}
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
-          {/* Vehicles (Read-only for others, CRUD role checks are custom) */}
-          <Route path="/vehicles" element={<VehiclesPage />} />
-          <Route path="/vehicles/:id" element={<div className="text-left">Vehicle Detail Page</div>} />
+            {/* Vehicles (Read-only for others, CRUD role checks are custom) */}
+            <Route path="/vehicles" element={<VehicleList />} />
+            <Route path="/vehicles/:id" element={<VehicleDetail />} />
 
-          {/* Drivers, Trips, and Maintenance (Accessible to Fleet Manager, Safety Officer, and Drivers) */}
-          <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
-            <Route path="/drivers" element={<DriversPage />} />
-            <Route path="/drivers/:id" element={<div className="text-left">Driver Detail Page</div>} />
-            <Route path="/trips" element={<TripsPage />} />
-            <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
-            <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
-            <Route path="/maintenance" element={<MaintenancePage />} />
+            {/* Drivers, Trips, and Maintenance (Accessible to Fleet Manager, Safety Officer, and Drivers) */}
+            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
+              <Route path="/drivers" element={<DriversPage />} />
+              <Route path="/drivers/:id" element={<div className="text-left">Driver Detail Page</div>} />
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
+              <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
+              <Route path="/maintenance" element={<MaintenancePage />} />
+            </Route>
+
+            {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
+            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
+              <Route path="/fuel-expenses" element={<FuelExpensesPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+            </Route>
+
           </Route>
 
-          {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
-          <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
-            <Route path="/fuel-expenses" element={<FuelExpensesPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-          </Route>
-
-        </Route>
-
-        {/* Fallback Redirection */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback Redirection */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
