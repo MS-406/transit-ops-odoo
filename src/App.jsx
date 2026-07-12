@@ -62,6 +62,7 @@ const PageHeader = ({ title, category = 'Platform' }) => (
 // Fuel & Expenses features loaded from features/fuel-expenses/
 
 // Reports features loaded from features/reports/
+import { UserManagement } from './features/users/UserManagement';
 
 // Placeholder: Settings
 const SettingsPage = () => {
@@ -143,6 +144,11 @@ function App() {
               <Route path="/trips/new" element={<Navigate to="/trips" replace />} />
               <Route path="/trips/:id" element={<Navigate to="/trips" replace />} />
               <Route path="/maintenance" element={<MaintenanceList />} />
+            </Route>
+
+            {/* Admin and Fleet Manager Routes */}
+            <Route element={<RoleGuard allowedRoles={['Admin', 'Fleet Manager']} />}>
+              <Route path="/users" element={<UserManagement />} />
             </Route>
 
             {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}

@@ -13,6 +13,7 @@ import {
   Wrench,
   Fuel,
   BarChart3,
+  User,
   Settings,
   LogOut,
   Bell,
@@ -134,6 +135,12 @@ export const Shell = ({ children }) => {
       path: '/audit-logs',
       icon: ShieldCheck,
       roles: ['Fleet Manager', 'Financial Analyst', 'Safety Officer', 'Dispatcher', 'Admin'],
+    },
+    {
+      name: 'Users',
+      path: '/users',
+      icon: Users,
+      roles: ['Fleet Manager', 'Admin'],
     },
     {
       name: 'Settings',

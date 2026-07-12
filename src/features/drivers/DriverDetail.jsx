@@ -168,10 +168,10 @@ export const DriverDetail = () => {
             <div className="grid grid-cols-2 py-2 border-b border-uber-gray-300">
               <span className="text-gray-400 font-medium">Safety Rating</span>
               <span className={`font-extrabold text-right flex items-center justify-end gap-1.5
-                ${driver.safety_score >= 90 ? 'text-uber-green' : ''}
-                ${driver.safety_score < 80 ? 'text-uber-red' : 'text-uber-black'}
+                ${driver.safety_score >= 4.5 ? 'bg-green-100 text-green-700' : ''}
+                ${driver.safety_score < 4.0 ? 'bg-red-100 text-red-700' : 'bg-uber-gray-100 text-gray-700'}
               `}>
-                <TrendingUp size={14} /> {driver.safety_score} / 100
+                <TrendingUp size={14} /> {Number(driver.safety_score).toFixed(1)} / 5.0
               </span>
             </div>
           </CardContent>

@@ -195,10 +195,10 @@ export const DriverList = () => {
                       </td>
                       <td className="py-4 px-6 font-bold text-gray-700">
                         <span className={`inline-flex items-center gap-1
-                          ${driver.safety_score >= 90 ? 'text-uber-green' : ''}
-                          ${driver.safety_score < 80 ? 'text-uber-red' : 'text-gray-700'}
+                          ${driver.safety_score >= 4.5 ? 'text-uber-green' : ''}
+                          ${driver.safety_score < 4.0 ? 'text-uber-red' : 'text-gray-700'}
                         `}>
-                          {driver.safety_score} / 100
+                          {Number(driver.safety_score).toFixed(1)} / 5.0
                         </span>
                       </td>
                       <td className="py-4 px-6 font-semibold">

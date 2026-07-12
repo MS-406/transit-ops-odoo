@@ -12,6 +12,7 @@ from app.api.v1.fuel_expenses import router as fuel_expenses_router
 from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.notifications import router as notifications_router
+from app.api.v1.users import router as users_router
 from app.core.exceptions import register_exception_handlers
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -51,6 +52,7 @@ app.include_router(dashboard_router, prefix="/api", tags=["Dashboard"])
 app.include_router(reports_router, prefix="/api", tags=["Reports"])
 app.include_router(audit_router, prefix="/api", tags=["Audit"])
 app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
+app.include_router(users_router, prefix="/api", tags=["Users"])
 
 if __name__ == "__main__":
     import uvicorn

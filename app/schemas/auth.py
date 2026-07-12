@@ -22,3 +22,9 @@ from typing import Optional
 
 class TokenRefreshRequest(BaseModel):
     refresh_token: Optional[str] = None
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: str
+    role_name: str
