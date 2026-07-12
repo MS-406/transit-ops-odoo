@@ -22,7 +22,7 @@ async def list_trips(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher", "driver", "safety_officer"]))
+    current_user: User = Depends(require_role(["dispatcher", "driver", "safety_officer", "admin"]))
 ):
     """List trips. Restricted to fleet_manager, driver, safety_officer."""
     query = (
@@ -40,7 +40,7 @@ async def list_trips(
 async def get_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher", "driver", "safety_officer"]))
+    current_user: User = Depends(require_role(["dispatcher", "driver", "safety_officer", "admin"]))
 ):
     """Get a specific trip by ID."""
     result = await db.execute(
@@ -57,7 +57,7 @@ async def get_trip(
 async def create_trip(
     payload: TripCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher"]))
+    current_user: User = Depends(require_role(["dispatcher", "admin"]))
 ):
     """Create a new trip in Draft status. Restricted to fleet managers."""
     # Validate vehicle
@@ -101,7 +101,7 @@ async def update_trip(
     trip_id: int,
     payload: TripUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher"]))
+    current_user: User = Depends(require_role(["dispatcher", "admin"]))
 ):
     """Update trip metadata."""
     result = await db.execute(select(Trip).where(Trip.id == trip_id))
@@ -128,7 +128,7 @@ async def update_trip(
 async def dispatch_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher"]))
+    current_user: User = Depends(require_role(["dispatcher", "admin"]))
 ):
     """Dispatch a trip. Transitions Draft -> Dispatched."""
     # Lock the trip
@@ -183,7 +183,7 @@ async def complete_trip(
     trip_id: int,
     payload: TripCompleteRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher", "driver"]))
+    current_user: User = Depends(require_role(["dispatcher", "driver", "admin"]))
 ):
     """Complete a trip. Transitions Dispatched -> Completed."""
     # Lock the trip
@@ -245,7 +245,7 @@ async def complete_trip(
 async def cancel_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["dispatcher"]))
+    current_user: User = Depends(require_role(["dispatcher", "admin"]))
 ):
     """Cancel a trip. Transitions Draft/Dispatched -> Cancelled."""
     # Lock the trip

@@ -29,7 +29,7 @@ export const VehicleList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Check write authorization
-  const isManager = user?.role === 'Fleet Manager';
+  const isManager = user?.role === 'Fleet Manager' || user?.role === 'Admin';
 
   // React Query: Fetch vehicles
   const { data, isLoading, isError, error } = useQuery({

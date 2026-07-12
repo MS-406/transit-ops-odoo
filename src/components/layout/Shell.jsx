@@ -46,55 +46,55 @@ export const Shell = ({ children }) => {
       name: 'Dashboard',
       path: '/dashboard',
       icon: LayoutDashboard,
-      roles: ['Fleet Manager', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Financial Analyst', 'Admin'],
     },
     {
       name: 'Fleet',
       path: '/vehicles',
       icon: Truck,
-      roles: ['Fleet Manager', 'Dispatcher', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Dispatcher', 'Financial Analyst', 'Admin'],
     },
     {
       name: 'Drivers',
       path: '/drivers',
       icon: Users,
-      roles: ['Fleet Manager', 'Safety Officer'],
+      roles: ['Fleet Manager', 'Safety Officer', 'Admin'],
     },
     {
       name: 'Trips',
       path: '/trips',
       icon: Route,
-      roles: ['Dispatcher', 'Safety Officer'],
+      roles: ['Dispatcher', 'Safety Officer', 'Admin'],
     },
     {
       name: 'Maintenance',
       path: '/maintenance',
       icon: Wrench,
-      roles: ['Fleet Manager'],
+      roles: ['Fleet Manager', 'Admin'],
     },
     {
       name: 'Fuel & Expenses',
       path: '/fuel-expenses',
       icon: Fuel,
-      roles: ['Financial Analyst'],
+      roles: ['Financial Analyst', 'Admin'],
     },
     {
       name: 'Analytics',
       path: '/reports',
       icon: BarChart3,
-      roles: ['Fleet Manager', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Financial Analyst', 'Admin'],
     },
     {
       name: 'Audit Logs',
       path: '/audit-logs',
       icon: ShieldCheck,
-      roles: ['Fleet Manager', 'Financial Analyst', 'Safety Officer', 'Dispatcher'],
+      roles: ['Fleet Manager', 'Financial Analyst', 'Safety Officer', 'Dispatcher', 'Admin'],
     },
     {
       name: 'Settings',
       path: '/settings',
       icon: Settings,
-      roles: ['Fleet Manager'],
+      roles: ['Fleet Manager', 'Admin'],
     },
   ];
 
@@ -135,6 +135,7 @@ export const Shell = ({ children }) => {
                 onChange={(e) => setRole(e.target.value)}
                 className="bg-transparent text-uber-white border-none outline-none font-bold cursor-pointer focus:ring-0 text-xs"
               >
+                <option value="Admin" className="bg-uber-black text-uber-white">Admin</option>
                 <option value="Fleet Manager" className="bg-uber-black text-uber-white">Fleet Manager</option>
                 <option value="Dispatcher" className="bg-uber-black text-uber-white">Dispatcher</option>
                 <option value="Driver" className="bg-uber-black text-uber-white">Driver</option>
@@ -233,6 +234,7 @@ export const Shell = ({ children }) => {
                     onChange={(e) => setRole(e.target.value)}
                     className="w-full bg-transparent text-uber-black font-bold outline-none text-xs border-none"
                   >
+                    <option value="Admin">Admin</option>
                     <option value="Fleet Manager">Fleet Manager</option>
                     <option value="Dispatcher">Dispatcher</option>
                     <option value="Driver">Driver</option>

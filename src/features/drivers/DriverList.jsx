@@ -29,7 +29,7 @@ export const DriverList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Safety Officers and Fleet Managers have write permissions
-  const isAuthorized = currentUser?.role === 'Fleet Manager' || currentUser?.role === 'Safety Officer';
+  const isAuthorized = currentUser?.role === 'Fleet Manager' || currentUser?.role === 'Safety Officer' || currentUser?.role === 'Admin';
 
   // React Query: Fetch drivers list
   const { data, isLoading, isError, error } = useQuery({

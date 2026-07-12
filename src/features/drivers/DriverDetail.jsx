@@ -27,7 +27,7 @@ export const DriverDetail = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Safety Officer & Fleet Manager have write access
-  const isAuthorized = currentUser?.role === 'Fleet Manager' || currentUser?.role === 'Safety Officer';
+  const isAuthorized = currentUser?.role === 'Fleet Manager' || currentUser?.role === 'Safety Officer' || currentUser?.role === 'Admin';
 
   // Query details
   const { data: driver, isLoading, error } = useQuery({

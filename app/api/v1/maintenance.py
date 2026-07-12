@@ -19,7 +19,7 @@ router = APIRouter(prefix="/maintenance", tags=["Maintenance"])
 async def list_maintenance(
     vehicle_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "financial_analyst", "admin"]))
 ):
     """List maintenance logs. Can filter by vehicle_id."""
     query = select(MaintenanceLog).options(selectinload(MaintenanceLog.vehicle))
@@ -47,7 +47,7 @@ async def list_maintenance(
 async def create_maintenance(
     payload: MaintenanceCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager"]))
+    current_user: User = Depends(require_role(["fleet_manager", "admin"]))
 ):
     """Open a new maintenance log. Flips vehicle to In Shop."""
     # Lock the vehicle
@@ -101,7 +101,7 @@ async def create_maintenance(
 async def close_maintenance(
     log_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager"]))
+    current_user: User = Depends(require_role(["fleet_manager", "admin"]))
 ):
     """Close an active maintenance log. Flips vehicle to Available unless Retired."""
     result = await db.execute(select(MaintenanceLog).where(MaintenanceLog.id == log_id).with_for_update())

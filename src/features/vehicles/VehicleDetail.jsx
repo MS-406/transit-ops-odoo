@@ -28,7 +28,7 @@ export const VehicleDetail = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Check role authorization for write access
-  const isManager = user?.role === 'Fleet Manager';
+  const isManager = user?.role === 'Fleet Manager' || user?.role === 'Admin';
 
   // Query details
   const { data: vehicle, isLoading, error } = useQuery({

@@ -157,7 +157,8 @@ export const Login = () => {
               value={demoRole}
               onChange={(e) => setDemoRole(e.target.value)}
               options={[
-                { value: 'Fleet Manager', label: 'Fleet Manager (All Access)' },
+                { value: 'Admin', label: 'Admin (All Access)' },
+                { value: 'Fleet Manager', label: 'Fleet Manager (Operations)' },
                 { value: 'Driver', label: 'Driver (Trip Focused)' },
                 { value: 'Safety Officer', label: 'Safety Officer (Compliance)' },
                 { value: 'Financial Analyst', label: 'Financial Analyst (Expenses)' }

@@ -29,7 +29,7 @@ export const MaintenanceList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Fleet Managers have write permissions
-  const isManager = user?.role === 'Fleet Manager';
+  const isManager = user?.role === 'Fleet Manager' || user?.role === 'Admin';
 
   // React Query: Fetch maintenance logs
   const { data: logs, isLoading, isError, error } = useQuery({

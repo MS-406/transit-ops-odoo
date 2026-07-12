@@ -16,7 +16,7 @@ router = APIRouter(prefix="/notifications", tags=["Notifications"])
 @router.get("/alerts", response_model=List[NotificationOut])
 async def get_alerts(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Dynamically poll for system alerts (expiring drivers, delayed trips)."""
     

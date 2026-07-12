@@ -131,7 +131,7 @@ function App() {
             <Route path="/vehicles/:id" element={<VehicleDetail />} />
 
             {/* Drivers, Trips, and Maintenance (Accessible to Fleet Manager, Safety Officer, and Drivers) */}
-            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
+            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver', 'Admin']} />}>
               <Route path="/drivers" element={<DriverList />} />
               <Route path="/drivers/:id" element={<DriverDetail />} />
               <Route path="/trips" element={<TripBoard />} />
@@ -141,7 +141,7 @@ function App() {
             </Route>
 
             {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
-            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
+            <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst', 'Admin']} />}>
               <Route path="/fuel-expenses" element={<FuelExpensesList />} />
               <Route path="/reports" element={<Reports />} />
             </Route>

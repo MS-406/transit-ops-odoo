@@ -22,7 +22,7 @@ async def list_vehicles(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst", "admin"]))
 ):
     """List vehicles. Accessible to all authenticated users."""
     query = select(Vehicle).offset(skip).limit(limit)
@@ -36,7 +36,7 @@ async def list_vehicles(
 async def get_vehicle(
     vehicle_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst", "admin"]))
 ):
     """Get a specific vehicle by ID."""
     result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
@@ -49,7 +49,7 @@ async def get_vehicle(
 async def create_vehicle(
     payload: VehicleCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager"]))
+    current_user: User = Depends(require_role(["fleet_manager", "admin"]))
 ):
     """Create a new vehicle. Restricted to fleet managers."""
     # Ensure status is valid
@@ -80,7 +80,7 @@ async def update_vehicle(
     vehicle_id: int,
     payload: VehicleUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager"]))
+    current_user: User = Depends(require_role(["fleet_manager", "admin"]))
 ):
     """Update a vehicle. Restricted to fleet managers."""
     result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
@@ -118,7 +118,7 @@ async def update_vehicle(
 async def delete_vehicle(
     vehicle_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager"]))
+    current_user: User = Depends(require_role(["fleet_manager", "admin"]))
 ):
     """Delete a vehicle. Restricted to fleet managers."""
     result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
@@ -141,7 +141,7 @@ async def delete_vehicle(
 async def get_vehicle_cost_rollup(
     vehicle_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Get total cost rollup (Fuel + Maintenance + Expenses) for a vehicle."""
     result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))

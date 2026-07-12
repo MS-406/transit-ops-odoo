@@ -33,7 +33,7 @@ export const FuelExpensesList = () => {
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
 
   // Authorize Financial Analyst and Fleet Managers
-  const isAuthorized = user?.role === 'Fleet Manager' || user?.role === 'Financial Analyst';
+  const isAuthorized = user?.role === 'Fleet Manager' || user?.role === 'Financial Analyst' || user?.role === 'Admin';
 
   // Query Refuel logs
   const { data: fuelLogs, isLoading: isFuelLoading } = useQuery({

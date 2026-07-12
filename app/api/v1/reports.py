@@ -21,7 +21,7 @@ router = APIRouter(prefix="/reports", tags=["Reports"])
 @router.get("/fuel-efficiency", response_model=List[FuelEfficiencyOut])
 async def get_fuel_efficiency(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Get fuel efficiency report per vehicle."""
     v_res = await db.execute(select(Vehicle).where(Vehicle.status != "Retired"))
@@ -46,7 +46,7 @@ async def get_fuel_efficiency(
 @router.get("/utilization", response_model=List[UtilizationOut])
 async def get_utilization(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Get utilization report (simulated 7 days for the chart)."""
     # Simulating 7 days of historical utilization rates for the chart as the frontend expects
@@ -65,7 +65,7 @@ async def get_utilization(
 @router.get("/cost", response_model=List[CostReportOut])
 async def get_cost_report(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Get total cost report grouped by categories."""
     f_res = await db.execute(select(func.sum(FuelLog.cost)))
@@ -90,7 +90,7 @@ async def get_cost_report(
 @router.get("/roi", response_model=List[ROIReportOut])
 async def get_roi_report(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Get ROI report per vehicle category."""
     v_res = await db.execute(select(Vehicle).where(Vehicle.status != "Retired"))
@@ -126,7 +126,7 @@ async def get_roi_report(
 @router.get("/export.csv")
 async def export_csv(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "admin"]))
 ):
     """Export ROI report as CSV."""
     # Re-use the ROI logic

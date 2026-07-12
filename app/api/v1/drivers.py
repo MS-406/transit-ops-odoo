@@ -19,7 +19,7 @@ async def list_drivers(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """List drivers. Accessible to all authenticated users."""
     query = select(Driver).offset(skip).limit(limit)
@@ -33,7 +33,7 @@ async def list_drivers(
 async def get_driver(
     driver_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Get a specific driver by ID."""
     result = await db.execute(select(Driver).where(Driver.id == driver_id))
@@ -46,7 +46,7 @@ async def get_driver(
 async def create_driver(
     payload: DriverCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Create a new driver. Restricted to fleet managers."""
     valid_statuses = ["Available", "On Trip", "Suspended"]
@@ -83,7 +83,7 @@ async def update_driver(
     driver_id: int,
     payload: DriverUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Update a driver. Restricted to fleet managers."""
     result = await db.execute(select(Driver).where(Driver.id == driver_id))
@@ -128,7 +128,7 @@ async def update_driver(
 async def delete_driver(
     driver_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "admin"]))
 ):
     """Delete a driver. Restricted to fleet managers."""
     result = await db.execute(select(Driver).where(Driver.id == driver_id))

@@ -100,7 +100,7 @@ export const TripBoard = () => {
   // Check roles
   const isDriver = user?.role === 'Driver';
   const isReadOnly = user?.role === 'Financial Analyst';
-  const isAuthorized = user?.role === 'Fleet Manager' || user?.role === 'Safety Officer' || user?.role === 'Driver';
+  const isAuthorized = user?.role === 'Fleet Manager' || user?.role === 'Safety Officer' || user?.role === 'Driver' || user?.role === 'Admin';
 
   // Query Trips, Vehicles, and Drivers pools
   const { data: trips, isLoading: isTripsLoading } = useQuery({
