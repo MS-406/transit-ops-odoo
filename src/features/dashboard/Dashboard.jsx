@@ -4,6 +4,7 @@ import { dashboardApi } from '../../api/dashboard';
 import { vehiclesApi } from '../../api/vehicles';
 import { tripsApi } from '../../api/trips';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
+import { MapSimulation } from './MapSimulation';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
@@ -230,11 +231,8 @@ export const Dashboard = () => {
             </h4>
             <Badge status="available">Live</Badge>
           </CardHeader>
-          <CardContent className="h-72 flex items-center justify-center bg-gray-50 border border-dashed border-gray-200 rounded-xl text-xs text-gray-400">
-            <div className="flex flex-col items-center gap-2">
-              <Activity size={24} className="text-gray-300 animate-pulse" />
-              <span>Map simulation loads in Trip Details panel.</span>
-            </div>
+          <CardContent className="h-72 p-0 overflow-hidden">
+            <MapSimulation />
           </CardContent>
         </Card>
 

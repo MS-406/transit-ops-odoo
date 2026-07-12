@@ -17,6 +17,7 @@ import { MaintenanceList } from './features/maintenance/MaintenanceList';
 import { FuelExpensesList } from './features/fuel-expenses/FuelExpensesList';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { Reports } from './features/reports/Reports';
+import { AuditLogs } from './features/audit-logs/AuditLogs';
 import {
   TrendingUp,
   AlertTriangle,
@@ -123,6 +124,7 @@ function App() {
             {/* Dashboard and Settings (All roles authorized) */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
 
             {/* Vehicles (Read-only for others, CRUD role checks are custom) */}
             <Route path="/vehicles" element={<VehicleList />} />

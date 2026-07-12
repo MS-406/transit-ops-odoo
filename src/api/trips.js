@@ -1,6 +1,7 @@
 import client from './client';
 import { useAuthStore } from '../store/authStore';
 import { mockDb } from '../utils/mockDb';
+import { auditLogger } from '../utils/auditLogger';
 
 const isSandbox = () => useAuthStore.getState().token === 'mock-jwt-token-12345';
 
@@ -50,6 +51,7 @@ export const tripsApi = {
         ...data,
         status: 'Draft'
       });
+      auditLogger.logAction('CREATE_TRIP', `Created Trip draft #${newTrip.id} (Route: ${newTrip.source} -> ${newTrip.destination})`);
       return { data: newTrip };
     }
     return client.post('/trips', data);
@@ -79,6 +81,7 @@ export const tripsApi = {
         mockDb.saveDriver(driver);
       }
 
+      auditLogger.logAction('DISPATCH_TRIP', `Dispatched Trip #${trip.id} (Route: ${trip.source} -> ${trip.destination})`);
       return { data: trip };
     }
     return client.patch(`/trips/${id}/dispatch`);
@@ -107,6 +110,7 @@ export const tripsApi = {
         mockDb.saveDriver(driver);
       }
 
+      auditLogger.logAction('CANCEL_TRIP', `Cancelled Trip #${trip.id}`);
       return { data: trip };
     }
     return client.patch(`/trips/${id}/cancel`);
@@ -163,6 +167,7 @@ export const tripsApi = {
       trip.fuel_consumed = data.fuel_consumed;
       mockDb.saveTrip(trip);
 
+      auditLogger.logAction('COMPLETE_TRIP', `Completed Trip #${trip.id}. Final Odometer: ${trip.final_odometer} km, Fuel Consumed: ${trip.fuel_consumed} L.`);
       return { data: trip };
     }
     return client.patch(`/trips/${id}/complete`, data);

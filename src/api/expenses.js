@@ -1,6 +1,7 @@
 import client from './client';
 import { useAuthStore } from '../store/authStore';
 import { mockDb } from '../utils/mockDb';
+import { auditLogger } from '../utils/auditLogger';
 
 const isSandbox = () => useAuthStore.getState().token === 'mock-jwt-token-12345';
 
@@ -67,6 +68,7 @@ export const expensesApi = {
       vehicle.fuel_logs.push(logItem);
       mockDb.saveVehicle(vehicle);
 
+      auditLogger.logAction('LOG_FUEL', `Logged ${data.liters} Liters refuel ($${data.cost}) for vehicle ${vehicle.registration_number}`);
       return { data: { id: `fuel-${vehicle.id}-${vehicle.fuel_logs.length - 1}`, ...data } };
     }
     return client.post('/fuel-logs', data);
@@ -107,6 +109,7 @@ export const expensesApi = {
       const updated = [...list, newExpense];
       saveLocalExpenses(updated);
 
+      auditLogger.logAction('LOG_EXPENSE', `Logged ${newExpense.category} expense ($${newExpense.cost}) for vehicle ${newExpense.vehicle_reg}: ${newExpense.description}`);
       return { data: newExpense };
     }
     return client.post('/expenses', data);

@@ -1,6 +1,7 @@
 import client from './client';
 import { useAuthStore } from '../store/authStore';
 import { mockDb } from '../utils/mockDb';
+import { auditLogger } from '../utils/auditLogger';
 
 const isSandbox = () => useAuthStore.getState().token === 'mock-jwt-token-12345';
 
@@ -40,6 +41,7 @@ export const driversApi = {
     if (isSandbox()) {
       await new Promise(r => setTimeout(r, 400));
       const newDriver = mockDb.saveDriver(data);
+      auditLogger.logAction('CREATE_DRIVER', `Created driver ${newDriver.name} (${newDriver.license_class})`);
       return { data: newDriver };
     }
     return client.post('/drivers', data);
@@ -49,6 +51,7 @@ export const driversApi = {
     if (isSandbox()) {
       await new Promise(r => setTimeout(r, 300));
       const updated = mockDb.saveDriver({ id, ...data });
+      auditLogger.logAction('UPDATE_DRIVER', `Updated driver ${updated.name} (Status: ${updated.status})`);
       return { data: updated };
     }
     return client.patch(`/drivers/${id}`, data);

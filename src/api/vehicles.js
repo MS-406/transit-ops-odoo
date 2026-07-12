@@ -1,6 +1,7 @@
 import client from './client';
 import { useAuthStore } from '../store/authStore';
 import { mockDb } from '../utils/mockDb';
+import { auditLogger } from '../utils/auditLogger';
 
 const isSandbox = () => useAuthStore.getState().token === 'mock-jwt-token-12345';
 
@@ -64,6 +65,7 @@ export const vehiclesApi = {
       }
       
       const newVehicle = mockDb.saveVehicle(data);
+      auditLogger.logAction('CREATE_VEHICLE', `Created vehicle ${newVehicle.registration_number} (${newVehicle.model})`);
       return { data: newVehicle };
     }
     return client.post('/vehicles', data);
@@ -91,6 +93,7 @@ export const vehiclesApi = {
       }
 
       const updated = mockDb.saveVehicle({ id, ...data });
+      auditLogger.logAction('UPDATE_VEHICLE', `Updated vehicle ${updated.registration_number} (${updated.model})`);
       return { data: updated };
     }
     return client.patch(`/vehicles/${id}`, data);
@@ -99,7 +102,9 @@ export const vehiclesApi = {
   deleteVehicle: async (id) => {
     if (isSandbox()) {
       await new Promise(r => setTimeout(r, 200));
+      const vehicle = mockDb.getVehicleById(id);
       mockDb.deleteVehicle(id);
+      auditLogger.logAction('DELETE_VEHICLE', `Deleted vehicle ${vehicle?.registration_number || id}`);
       return { data: { success: true } };
     }
     return client.delete(`/vehicles/${id}`);

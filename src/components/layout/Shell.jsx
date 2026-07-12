@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { CommandPalette } from './CommandPalette';
 import {
   LayoutDashboard,
   Truck,
@@ -21,6 +22,18 @@ export const Shell = ({ children }) => {
   const { user, logout, setRole, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -70,6 +83,12 @@ export const Shell = ({ children }) => {
       path: '/reports',
       icon: BarChart3,
       roles: ['Fleet Manager', 'Financial Analyst'],
+    },
+    {
+      name: 'Audit Logs',
+      path: '/audit-logs',
+      icon: ShieldCheck,
+      roles: ['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst'],
     },
     {
       name: 'Settings',
@@ -266,6 +285,7 @@ export const Shell = ({ children }) => {
           </div>
         </main>
 
+        <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
       </div>
     </div>
   );

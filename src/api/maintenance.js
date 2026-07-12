@@ -1,6 +1,7 @@
 import client from './client';
 import { useAuthStore } from '../store/authStore';
 import { mockDb } from '../utils/mockDb';
+import { auditLogger } from '../utils/auditLogger';
 
 const isSandbox = () => useAuthStore.getState().token === 'mock-jwt-token-12345';
 
@@ -60,6 +61,7 @@ export const maintenanceApi = {
       // Save vehicle update
       mockDb.saveVehicle(vehicle);
 
+      auditLogger.logAction('OPEN_MAINTENANCE', `Opened maintenance ticket for vehicle ${vehicle.registration_number}: ${logItem.description}`);
       return { data: logItem };
     }
 
@@ -108,6 +110,7 @@ export const maintenanceApi = {
 
       mockDb.saveVehicle(targetVehicle);
 
+      auditLogger.logAction('CLOSE_MAINTENANCE', `Closed maintenance ticket for vehicle ${targetVehicle.registration_number}: ${targetRecord.description} (Status: ${targetVehicle.status})`);
       return { data: targetRecord };
     }
 
