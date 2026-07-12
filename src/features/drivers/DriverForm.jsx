@@ -21,8 +21,10 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
   } = useForm({
     defaultValues: {
       name: '',
+      license_number: '',
       license_class: '',
       license_expiry: '',
+      contact_number: '',
       status: 'Available',
       safety_score: 90 // Default value, shown read-only in UI
     }
@@ -41,16 +43,20 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
     if (driverData && isEditMode) {
       reset({
         name: driverData.name,
+        license_number: driverData.license_number || '',
         license_class: driverData.license_class,
         license_expiry: driverData.license_expiry,
+        contact_number: driverData.contact_number || '',
         status: driverData.status,
         safety_score: driverData.safety_score
       });
     } else if (!isEditMode) {
       reset({
         name: '',
+        license_number: '',
         license_class: '',
         license_expiry: '',
+        contact_number: '',
         status: 'Available',
         safety_score: 90
       });
@@ -66,7 +72,7 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
       onClose();
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to create driver.');
+      toast.error(err.response?.data?.detail || err.message || 'Failed to create driver.');
     }
   });
 
@@ -80,7 +86,7 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
       onClose();
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to update driver.');
+      toast.error(err.response?.data?.detail || err.message || 'Failed to update driver.');
     }
   });
 
@@ -88,8 +94,10 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
     // safety_score is read-only, ensure we don't try to send a modified client value or let them alter it
     const payload = {
       name: data.name,
+      license_number: data.license_number,
       license_class: data.license_class,
       license_expiry: data.license_expiry,
+      contact_number: data.contact_number,
       status: data.status
     };
 
@@ -126,6 +134,24 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
             disabled={isSaving}
             {...register('name', { required: 'Driver name is required' })}
           />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="License Number"
+              placeholder="e.g. DL-123456"
+              error={errors.license_number?.message}
+              disabled={isSaving}
+              {...register('license_number', { required: 'License number is required' })}
+            />
+
+            <Input
+              label="Contact Number"
+              placeholder="e.g. +254 700 000 000"
+              error={errors.contact_number?.message}
+              disabled={isSaving}
+              {...register('contact_number', { required: 'Contact number is required' })}
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input

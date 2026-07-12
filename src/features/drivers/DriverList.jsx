@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { driversApi } from '../../api/drivers';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { DriverForm } from './DriverForm';
+import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 import { parseISO, differenceInDays } from 'date-fns';
 import {
@@ -39,6 +40,18 @@ export const DriverList = () => {
       status: statusFilter
     }),
     select: (res) => res.data
+  });
+
+  const queryClient = useQueryClient();
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }) => driversApi.updateDriver(id, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      toast.success('Driver status updated');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.detail || err.message || 'Failed to update status');
+    }
   });
 
   const clearFilters = () => {
@@ -202,7 +215,33 @@ export const DriverList = () => {
                         )}
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <Badge status={driver.status}>{driver.status}</Badge>
+                        {isAuthorized ? (
+                          <div className="inline-block relative">
+                            <select
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                updateStatusMutation.mutate({ id: driver.id, status: e.target.value });
+                              }}
+                              value={driver.status}
+                              disabled={updateStatusMutation.isPending && updateStatusMutation.variables?.id === driver.id}
+                              className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md border appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-uber-black transition-colors ${
+                                driver.status === 'Available' ? 'bg-green-50 text-uber-green border-green-200 hover:bg-green-100' :
+                                driver.status === 'On Trip' ? 'bg-blue-50 text-uber-blue border-blue-200 hover:bg-blue-100' :
+                                'bg-red-50 text-uber-red border-red-200 hover:bg-red-100'
+                              }`}
+                            >
+                              <option value="Available">Available</option>
+                              <option value="On Trip">On Trip</option>
+                              <option value="Suspended">Suspended</option>
+                            </select>
+                            {updateStatusMutation.isPending && updateStatusMutation.variables?.id === driver.id && (
+                              <Loader2 size={12} className="animate-spin absolute -right-4 top-2 text-gray-400" />
+                            )}
+                          </div>
+                        ) : (
+                          <Badge status={driver.status}>{driver.status}</Badge>
+                        )}
                       </td>
                       <td className="py-4 px-6 text-right text-gray-400 group-hover:text-uber-black transition-colors">
                         <ChevronRight size={16} className="inline-block transform group-hover:translate-x-0.5 transition-transform" />
