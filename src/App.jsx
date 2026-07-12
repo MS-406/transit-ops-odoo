@@ -13,6 +13,7 @@ import { VehicleDetail } from './features/vehicles/VehicleDetail';
 import { DriverList } from './features/drivers/DriverList';
 import { DriverDetail } from './features/drivers/DriverDetail';
 import { TripBoard } from './features/trips/TripBoard';
+import { MaintenanceList } from './features/maintenance/MaintenanceList';
 import {
   TrendingUp,
   AlertTriangle,
@@ -146,20 +147,7 @@ const DashboardPage = () => {
 
 // Trip board loaded from features/trips/
 
-// Placeholder: Maintenance
-const MaintenancePage = () => (
-  <div className="text-left">
-    <PageHeader title="Maintenance Logs" category="Operations" />
-    <Card>
-      <CardHeader>
-        <h4 className="font-bold text-xs uppercase text-gray-500 tracking-wider">Active Shop Records</h4>
-      </CardHeader>
-      <CardContent>
-        <p className="text-xs text-gray-500">No active maintenance work orders. View resolved history logs in reports.</p>
-      </CardContent>
-    </Card>
-  </div>
-);
+// Maintenance logs features loaded from features/maintenance/
 
 // Placeholder: Fuel & Expenses
 const FuelExpensesPage = () => (
@@ -282,7 +270,7 @@ function App() {
               <Route path="/trips" element={<TripBoard />} />
               <Route path="/trips/new" element={<Navigate to="/trips" replace />} />
               <Route path="/trips/:id" element={<Navigate to="/trips" replace />} />
-              <Route path="/maintenance" element={<MaintenancePage />} />
+              <Route path="/maintenance" element={<MaintenanceList />} />
             </Route>
 
             {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
