@@ -4,10 +4,9 @@ import { dashboardApi } from '../../api/dashboard';
 import { vehiclesApi } from '../../api/vehicles';
 import { tripsApi } from '../../api/trips';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
-import { MapSimulation } from './MapSimulation';
+import { FilterDropdown } from '../../components/ui/FilterDropdown';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Select } from '../../components/ui/Select';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -115,10 +114,10 @@ export const Dashboard = () => {
 
         {/* Filters Panel */}
         <div className="flex items-center gap-3">
-          <div className="w-36 md:w-44">
-            <Select
+          <div className="w-40 md:w-48 z-20">
+            <FilterDropdown
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
+              onChange={(val) => setSelectedType(val)}
               options={[
                 { value: '', label: 'All Classifications' },
                 { value: 'Bus', label: 'Bus' },
@@ -128,10 +127,10 @@ export const Dashboard = () => {
               ]}
             />
           </div>
-          <div className="w-36 md:w-44">
-            <Select
+          <div className="w-40 md:w-48 z-20">
+            <FilterDropdown
               value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
+              onChange={(val) => setSelectedRegion(val)}
               options={[
                 { value: '', label: 'All Regions' },
                 { value: 'Pune', label: 'Pune' },
@@ -229,16 +228,39 @@ export const Dashboard = () => {
       {/* Map and Operations Feeds */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Route Map Panel */}
-        <Card className="lg:col-span-2 select-none">
+        {/* Route Map Panel (Replaced by Table) */}
+        <Card className="lg:col-span-2 select-none overflow-hidden">
           <CardHeader className="flex justify-between items-center pb-2">
             <h4 className="font-extrabold uppercase text-xs tracking-wider text-gray-500 flex items-center gap-1.5">
-              <Navigation size={14} /> Fleet Map Tracker
+              <Navigation size={14} /> Live Fleet Status
             </h4>
             <Badge status="available">Live</Badge>
           </CardHeader>
-          <CardContent className="h-72 p-0 overflow-hidden">
-            <MapSimulation />
+          <CardContent className="h-72 p-0 overflow-y-auto">
+            {(!vehicles || vehicles.length === 0) ? (
+               <div className="flex justify-center items-center h-full text-xs text-gray-400 italic">No vehicles available.</div>
+            ) : (
+               <table className="w-full text-left text-xs border-collapse">
+                 <thead className="sticky top-0 bg-gray-50 text-gray-400 uppercase tracking-wider font-extrabold">
+                   <tr>
+                     <th className="py-3 px-4">Plate</th>
+                     <th className="py-3 px-4">Classification</th>
+                     <th className="py-3 px-4">Region</th>
+                     <th className="py-3 px-4 text-right">Status</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-uber-gray-200">
+                   {vehicles.map(v => (
+                     <tr key={v.id} className="hover:bg-gray-50 transition-colors">
+                       <td className="py-3 px-4 font-bold text-uber-black">{v.registration_number}</td>
+                       <td className="py-3 px-4 text-gray-600 font-semibold">{v.type} <span className="text-gray-400 font-normal">({v.model})</span></td>
+                       <td className="py-3 px-4 font-semibold text-gray-700">{v.region}</td>
+                       <td className="py-3 px-4 text-right"><Badge status={v.status}>{v.status}</Badge></td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+            )}
           </CardContent>
         </Card>
 
