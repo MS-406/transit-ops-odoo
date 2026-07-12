@@ -10,6 +10,8 @@ import { Badge } from './components/ui/Badge';
 import { useAuthStore } from './store/authStore';
 import { VehicleList } from './features/vehicles/VehicleList';
 import { VehicleDetail } from './features/vehicles/VehicleDetail';
+import { DriverList } from './features/drivers/DriverList';
+import { DriverDetail } from './features/drivers/DriverDetail';
 import {
   TrendingUp,
   AlertTriangle,
@@ -139,68 +141,7 @@ const DashboardPage = () => {
   );
 };
 
-// Placeholder: Drivers
-const DriversPage = () => (
-  <div className="text-left">
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <span className="text-xs uppercase font-extrabold tracking-widest text-gray-500">Registry / Drivers</span>
-        <h2 className="text-3xl font-extrabold tracking-tight mt-1 text-uber-black uppercase">Drivers</h2>
-      </div>
-      <Button variant="primary" size="sm" className="flex items-center gap-2">
-        <Plus size={16} /> Add Driver
-      </Button>
-    </div>
-    
-    <Card>
-      <CardHeader>
-        <h4 className="font-bold text-xs uppercase text-gray-500 tracking-wider">Active Drivers Preview</h4>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="border-b border-uber-gray-300 text-gray-400 uppercase tracking-wider font-extrabold">
-                <th className="py-3 px-4">Driver Name</th>
-                <th className="py-3 px-4">License Class</th>
-                <th className="py-3 px-4">License Expiry</th>
-                <th className="py-3 px-4">Safety Score</th>
-                <th className="py-3 px-4">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-uber-gray-300">
-              <tr className="hover:bg-gray-50">
-                <td className="py-4 px-4 font-bold text-uber-black">John Doe</td>
-                <td className="py-4 px-4">Class A, CE</td>
-                <td className="py-4 px-4 text-uber-green font-bold">2027-04-10 (Valid)</td>
-                <td className="py-4 px-4 text-gray-600">95 / 100</td>
-                <td className="py-4 px-4"><Badge status="available">Available</Badge></td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="py-4 px-4 font-bold text-uber-black">Jane Watson</td>
-                <td className="py-4 px-4">Class B, C</td>
-                <td className="py-4 px-4 text-uber-amber font-bold flex items-center gap-1.5">
-                  <AlertTriangle size={14} /> 2026-07-25 (13 Days left)
-                </td>
-                <td className="py-4 px-4 text-gray-600">89 / 100</td>
-                <td className="py-4 px-4"><Badge status="on trip">On Trip</Badge></td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="py-4 px-4 font-bold text-uber-black">Bob Johnson</td>
-                <td className="py-4 px-4">Class E, F</td>
-                <td className="py-4 px-4 text-uber-red font-bold flex items-center gap-1.5">
-                  <AlertTriangle size={14} /> 2026-06-15 (Expired)
-                </td>
-                <td className="py-4 px-4 text-gray-600">76 / 100</td>
-                <td className="py-4 px-4"><Badge status="suspended">Suspended</Badge></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
+// Driver components are loaded from features/drivers/
 
 // Placeholder: Trips
 const TripsPage = () => (
@@ -401,8 +342,8 @@ function App() {
 
             {/* Drivers, Trips, and Maintenance (Accessible to Fleet Manager, Safety Officer, and Drivers) */}
             <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
-              <Route path="/drivers" element={<DriversPage />} />
-              <Route path="/drivers/:id" element={<div className="text-left">Driver Detail Page</div>} />
+              <Route path="/drivers" element={<DriverList />} />
+              <Route path="/drivers/:id" element={<DriverDetail />} />
               <Route path="/trips" element={<TripsPage />} />
               <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
               <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
