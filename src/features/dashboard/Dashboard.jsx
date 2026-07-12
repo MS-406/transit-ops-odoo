@@ -150,9 +150,11 @@ export const Dashboard = () => {
             <Zap size={10} className="fill-uber-green" /> Operations Command Center
           </span>
           <h3 className="text-2xl font-bold mt-1">Hello, {user?.name || 'Operator'}</h3>
-          <p className="text-gray-400 text-xs mt-1">
-            Active simulator session. Click settings to preview role-based access lists.
-          </p>
+          {user && useAuthStore.getState().token === 'mock-jwt-token-12345' && (
+            <p className="text-gray-400 text-xs mt-1">
+              Active simulator session. Click settings to preview role-based access lists.
+            </p>
+          )}
         </div>
         {!isReadOnly && (
           <div className="flex gap-3">

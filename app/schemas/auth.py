@@ -5,7 +5,7 @@ class UserOut(BaseModel):
     email: EmailStr
     full_name: str
     name: str
-    role: str = Field(alias="role_name")
+    role: str
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 

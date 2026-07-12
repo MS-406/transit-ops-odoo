@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const Shell = ({ children }) => {
-  const { user, logout, setRole, isAuthenticated } = useAuthStore();
+  const { user, token, logout, setRole, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
@@ -46,40 +46,40 @@ export const Shell = ({ children }) => {
       name: 'Dashboard',
       path: '/dashboard',
       icon: LayoutDashboard,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Financial Analyst'],
     },
     {
-      name: 'Vehicles',
+      name: 'Fleet',
       path: '/vehicles',
       icon: Truck,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Dispatcher', 'Financial Analyst'],
     },
     {
       name: 'Drivers',
       path: '/drivers',
       icon: Users,
-      roles: ['Fleet Manager', 'Safety Officer', 'Driver'], // Financial Analyst has read-only, we can show it or hide based on role
+      roles: ['Fleet Manager', 'Safety Officer'],
     },
     {
       name: 'Trips',
       path: '/trips',
       icon: Route,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer'],
+      roles: ['Dispatcher', 'Safety Officer'],
     },
     {
       name: 'Maintenance',
       path: '/maintenance',
       icon: Wrench,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer'], // Safety Officer can see read-only, Fleet Manager full
+      roles: ['Fleet Manager'],
     },
     {
       name: 'Fuel & Expenses',
       path: '/fuel-expenses',
       icon: Fuel,
-      roles: ['Fleet Manager', 'Financial Analyst'],
+      roles: ['Financial Analyst'],
     },
     {
-      name: 'Reports & Analytics',
+      name: 'Analytics',
       path: '/reports',
       icon: BarChart3,
       roles: ['Fleet Manager', 'Financial Analyst'],
@@ -88,13 +88,13 @@ export const Shell = ({ children }) => {
       name: 'Audit Logs',
       path: '/audit-logs',
       icon: ShieldCheck,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst'],
+      roles: ['Fleet Manager', 'Financial Analyst', 'Safety Officer', 'Dispatcher'],
     },
     {
       name: 'Settings',
       path: '/settings',
       icon: Settings,
-      roles: ['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst'],
+      roles: ['Fleet Manager'],
     },
   ];
 
@@ -126,7 +126,7 @@ export const Shell = ({ children }) => {
         <div className="flex items-center gap-6">
           
           {/* Role Simulation Mode (Quick Switcher) */}
-          {user && (
+          {user && token === 'mock-jwt-token-12345' && (
             <div className="hidden sm:flex items-center gap-2 bg-uber-gray-900 border border-uber-gray-300/20 px-3 py-1.5 rounded-full text-xs">
               <ShieldCheck size={16} className="text-uber-green" />
               <span className="text-gray-400 font-medium">Role Simulator:</span>
@@ -136,6 +136,7 @@ export const Shell = ({ children }) => {
                 className="bg-transparent text-uber-white border-none outline-none font-bold cursor-pointer focus:ring-0 text-xs"
               >
                 <option value="Fleet Manager" className="bg-uber-black text-uber-white">Fleet Manager</option>
+                <option value="Dispatcher" className="bg-uber-black text-uber-white">Dispatcher</option>
                 <option value="Driver" className="bg-uber-black text-uber-white">Driver</option>
                 <option value="Safety Officer" className="bg-uber-black text-uber-white">Safety Officer</option>
                 <option value="Financial Analyst" className="bg-uber-black text-uber-white">Financial Analyst</option>
@@ -224,7 +225,7 @@ export const Shell = ({ children }) => {
               </div>
 
               {/* Mobile Role Switching */}
-              {user && (
+              {user && token === 'mock-jwt-token-12345' && (
                 <div className="mb-6 flex flex-col gap-1 px-2 py-3 bg-uber-gray-100 rounded-xl">
                   <span className="text-[10px] uppercase font-bold text-gray-500">Preview Role</span>
                   <select
@@ -233,6 +234,7 @@ export const Shell = ({ children }) => {
                     className="w-full bg-transparent text-uber-black font-bold outline-none text-xs border-none"
                   >
                     <option value="Fleet Manager">Fleet Manager</option>
+                    <option value="Dispatcher">Dispatcher</option>
                     <option value="Driver">Driver</option>
                     <option value="Safety Officer">Safety Officer</option>
                     <option value="Financial Analyst">Financial Analyst</option>

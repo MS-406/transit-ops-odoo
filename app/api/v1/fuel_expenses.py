@@ -18,7 +18,7 @@ router = APIRouter(tags=["Fuel & Expenses"])
 async def list_fuel_logs(
     vehicle_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "safety_officer", "financial_analyst", "driver"]))
+    current_user: User = Depends(require_role(["financial_analyst"]))
 ):
     """List fuel logs. Can filter by vehicle_id."""
     query = select(FuelLog).options(selectinload(FuelLog.vehicle))
@@ -45,7 +45,7 @@ async def list_fuel_logs(
 async def create_fuel_log(
     payload: FuelLogCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "driver"]))
+    current_user: User = Depends(require_role(["financial_analyst", "driver"]))
 ):
     """Create a new fuel log."""
     log = FuelLog(**payload.model_dump())
@@ -70,7 +70,7 @@ async def list_expenses(
     vehicle_id: Optional[int] = Query(None),
     type: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["financial_analyst"]))
 ):
     """List expenses. Can filter by vehicle_id and type."""
     query = select(Expense).options(selectinload(Expense.vehicle))
@@ -99,7 +99,7 @@ async def list_expenses(
 async def create_expense(
     payload: ExpenseCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
+    current_user: User = Depends(require_role(["financial_analyst"]))
 ):
     """Create a new expense."""
     expense = Expense(**payload.model_dump(by_alias=True))

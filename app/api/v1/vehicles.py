@@ -22,7 +22,7 @@ async def list_vehicles(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst"]))
 ):
     """List vehicles. Accessible to all authenticated users."""
     query = select(Vehicle).offset(skip).limit(limit)
@@ -36,7 +36,7 @@ async def list_vehicles(
 async def get_vehicle(
     vehicle_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_role(["fleet_manager", "dispatcher", "financial_analyst"]))
 ):
     """Get a specific vehicle by ID."""
     result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))

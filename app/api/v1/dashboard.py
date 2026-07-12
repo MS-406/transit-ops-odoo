@@ -19,7 +19,7 @@ async def get_kpis(
     status: Optional[str] = Query(None),
     region: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst", "safety_officer"]))
+    current_user: User = Depends(require_role(["fleet_manager", "financial_analyst"]))
 ):
     """Get fleet KPIs with optional filtering."""
     
