@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -8,6 +8,8 @@ from app.models.user import User
 from app.schemas.auth import LoginRequest, TokenResponse, TokenRefreshRequest, UserOut
 from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.exceptions import APIException
+from fastapi import Request
+from app.core.limiter import limiter
 from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -27,7 +29,8 @@ def _user_to_dict(user: User) -> dict:
     }
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     # Find user by email, eager load role
     result = await db.execute(
         select(User)

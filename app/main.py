@@ -12,11 +12,28 @@ from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.notifications import router as notifications_router
 from app.core.exceptions import register_exception_handlers
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.limiter import limiter
 
 app = FastAPI(
-    title="TransitOps API",
-    description="Smart Transport Operations Platform API",
+    title="TransitOps Backend API",
+    description="Backend for Smart Transport Operations Platform",
     version="1.0.0"
+)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Register custom exception handlers
