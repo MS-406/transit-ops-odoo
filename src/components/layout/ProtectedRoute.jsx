@@ -3,23 +3,31 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Shell } from './Shell';
 
-export const ProtectedRoute = ({ allowedRoles }) => {
-  const { isAuthenticated, user } = useAuthStore();
+// ProtectedRoute: Verifies login state and renders the Shell layout wrapper
+export const ProtectedRoute = () => {
+  const { isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated) {
     // Redirect to login if not authenticated
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // Redirect to dashboard or access denied page if the user doesn't have the required role
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // Render content wrapped in standard Shell layout
+  // Render children inside layout shell
   return (
     <Shell>
       <Outlet />
     </Shell>
   );
+};
+
+// RoleGuard: Performs granular RBAC checks on individual nested routes
+export const RoleGuard = ({ allowedRoles }) => {
+  const { user } = useAuthStore();
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    // Redirect unauthorized roles back to safe landing page
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
 };

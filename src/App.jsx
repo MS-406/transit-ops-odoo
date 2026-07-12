@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Login } from './features/auth/Login';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { ProtectedRoute, RoleGuard } from './components/layout/ProtectedRoute';
 import { Card, CardHeader, CardContent } from './components/ui/Card';
 import { Button } from './components/ui/Button';
 import { Badge } from './components/ui/Badge';
@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Download,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 
 // Common breadcrumbs helper for placeholder pages
@@ -412,6 +413,24 @@ const SettingsPage = () => (
 );
 
 function App() {
+  const { isInitialized, refreshSession } = useAuthStore();
+
+  useEffect(() => {
+    refreshSession();
+  }, [refreshSession]);
+
+  // Loading screen during initial cookie validation checks
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-uber-white font-sans">
+        <Loader2 size={36} className="animate-spin text-uber-black" />
+        <span className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mt-4 select-none">
+          Transit<span className="text-uber-green">Ops</span> — Restoring Session...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       {/* Toast notifications handler */}
@@ -422,19 +441,32 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Access Controlled Shell Routes */}
-        <Route element={<ProtectedRoute allowedRoles={['Fleet Manager', 'Driver', 'Safety Officer', 'Financial Analyst']} />}>
+        <Route element={<ProtectedRoute />}>
+          
+          {/* Dashboard and Settings (All roles authorized) */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+
+          {/* Vehicles (Read-only for others, CRUD role checks are custom) */}
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/:id" element={<div className="text-left">Vehicle Detail Page</div>} />
-          <Route path="/drivers" element={<DriversPage />} />
-          <Route path="/drivers/:id" element={<div className="text-left">Driver Detail Page</div>} />
-          <Route path="/trips" element={<TripsPage />} />
-          <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
-          <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
-          <Route path="/maintenance" element={<MaintenancePage />} />
-          <Route path="/fuel-expenses" element={<FuelExpensesPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+
+          {/* Drivers, Trips, and Maintenance (Accessible to Fleet Manager, Safety Officer, and Drivers) */}
+          <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Safety Officer', 'Driver']} />}>
+            <Route path="/drivers" element={<DriversPage />} />
+            <Route path="/drivers/:id" element={<div className="text-left">Driver Detail Page</div>} />
+            <Route path="/trips" element={<TripsPage />} />
+            <Route path="/trips/new" element={<div className="text-left">Create Trip Form</div>} />
+            <Route path="/trips/:id" element={<div className="text-left">Trip Detail View</div>} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+          </Route>
+
+          {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
+          <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
+            <Route path="/fuel-expenses" element={<FuelExpensesPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+          </Route>
+
         </Route>
 
         {/* Fallback Redirection */}

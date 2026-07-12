@@ -4,28 +4,64 @@ import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const Login = () => {
   const [email, setEmail] = useState('admin@transitops.com');
   const [password, setPassword] = useState('password123');
-  const [role, setRole] = useState('Fleet Manager');
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [demoRole, setDemoRole] = useState('Fleet Manager');
+  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
     
-    // Perform mock login
-    login(email, password, role);
-    navigate('/dashboard');
+    setLocalLoading(true);
+    setError('');
+
+    if (isDemoMode) {
+      // Offline/demo mode bypass
+      setTimeout(() => {
+        useAuthStore.setState({
+          user: {
+            name: email.split('@')[0],
+            email,
+            role: demoRole,
+          },
+          token: 'mock-jwt-token-12345',
+          isAuthenticated: true,
+          isInitialized: true,
+        });
+        setLocalLoading(false);
+        toast.success(`Logged in as simulated ${demoRole} (Sandbox Mode)`);
+        navigate('/dashboard');
+      }, 800);
+      return;
+    }
+
+    // Real API Login
+    const result = await login(email, password);
+    setLocalLoading(false);
+    
+    if (result.success) {
+      toast.success('Logged in successfully!');
+      navigate('/dashboard');
+    } else {
+      setError(result.error);
+      toast.error(result.error);
+    }
   };
+
+  const loadingState = isLoading || localLoading;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-uber-white md:bg-uber-gray-100 p-6 select-none font-sans">
@@ -43,13 +79,48 @@ export const Login = () => {
           </p>
         </div>
 
-        {/* Informational Alert Box */}
-        <div className="mb-6 p-4 rounded-xl bg-gray-50 border border-gray-200 flex items-start gap-3">
-          <ShieldAlert className="text-uber-amber shrink-0 mt-0.5" size={18} />
-          <div className="text-xs text-gray-600 leading-relaxed text-left">
-            <strong>Role Simulation Active:</strong> Choose a preset role below to preview specific permission levels across the platform.
-          </div>
+        {/* Mode Switcher */}
+        <div className="mb-6 p-1 bg-uber-gray-100 rounded-xl flex gap-1 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setIsDemoMode(false);
+              setError('');
+            }}
+            className={`flex-1 py-2 rounded-lg font-bold uppercase tracking-wider transition-all
+              ${!isDemoMode ? 'bg-uber-black text-uber-white shadow-sm' : 'text-gray-500 hover:text-uber-black'}`}
+          >
+            Live Server API
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsDemoMode(true);
+              setError('');
+            }}
+            className={`flex-1 py-2 rounded-lg font-bold uppercase tracking-wider transition-all
+              ${isDemoMode ? 'bg-uber-black text-uber-white shadow-sm' : 'text-gray-500 hover:text-uber-black'}`}
+          >
+            Sandbox Mode
+          </button>
         </div>
+
+        {/* Warning Alert Box */}
+        {isDemoMode ? (
+          <div className="mb-6 p-4 rounded-xl bg-gray-50 border border-gray-200 flex items-start gap-3">
+            <ShieldCheck className="text-uber-green shrink-0 mt-0.5" size={18} />
+            <div className="text-xs text-gray-600 leading-relaxed text-left">
+              <strong>Offline Sandbox Active:</strong> You can select any role to bypass the API server checks for review and layout testing.
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3">
+            <ShieldAlert className="text-uber-red shrink-0 mt-0.5" size={18} />
+            <div className="text-xs text-red-800 leading-relaxed text-left">
+              <strong>Live Server Mode:</strong> This requests credentials against the FastAPI endpoints. Ensure your backend server is active.
+            </div>
+          </div>
+        )}
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 text-left">
@@ -63,6 +134,7 @@ export const Login = () => {
               setError('');
             }}
             placeholder="name@transitops.com"
+            disabled={loadingState}
             required
           />
 
@@ -75,20 +147,24 @@ export const Login = () => {
               setError('');
             }}
             placeholder="••••••••"
+            disabled={loadingState}
             required
           />
 
-          <Select
-            label="Simulated Role (RBAC Setup)"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            options={[
-              { value: 'Fleet Manager', label: 'Fleet Manager (All Access)' },
-              { value: 'Driver', label: 'Driver (Trip Focused)' },
-              { value: 'Safety Officer', label: 'Safety Officer (Compliance)' },
-              { value: 'Financial Analyst', label: 'Financial Analyst (Expenses/Reports)' }
-            ]}
-          />
+          {isDemoMode && (
+            <Select
+              label="Simulated Role (RBAC)"
+              value={demoRole}
+              onChange={(e) => setDemoRole(e.target.value)}
+              options={[
+                { value: 'Fleet Manager', label: 'Fleet Manager (All Access)' },
+                { value: 'Driver', label: 'Driver (Trip Focused)' },
+                { value: 'Safety Officer', label: 'Safety Officer (Compliance)' },
+                { value: 'Financial Analyst', label: 'Financial Analyst (Expenses)' }
+              ]}
+              disabled={loadingState}
+            />
+          )}
 
           {error && (
             <span className="text-xs font-semibold text-uber-red mt-1">
@@ -100,9 +176,17 @@ export const Login = () => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full mt-2"
+            className="w-full mt-2 flex items-center justify-center gap-2"
+            disabled={loadingState}
           >
-            Sign In
+            {loadingState ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Signing In...</span>
+              </>
+            ) : (
+              <span>Sign In</span>
+            )}
           </Button>
 
         </form>
