@@ -14,6 +14,7 @@ import { DriverList } from './features/drivers/DriverList';
 import { DriverDetail } from './features/drivers/DriverDetail';
 import { TripBoard } from './features/trips/TripBoard';
 import { MaintenanceList } from './features/maintenance/MaintenanceList';
+import { FuelExpensesList } from './features/fuel-expenses/FuelExpensesList';
 import {
   TrendingUp,
   AlertTriangle,
@@ -149,20 +150,7 @@ const DashboardPage = () => {
 
 // Maintenance logs features loaded from features/maintenance/
 
-// Placeholder: Fuel & Expenses
-const FuelExpensesPage = () => (
-  <div className="text-left">
-    <PageHeader title="Fuel & Expenses" category="Finance" />
-    <Card>
-      <CardHeader>
-        <h4 className="font-bold text-xs uppercase text-gray-500 tracking-wider">Financial Transactions Ledger</h4>
-      </CardHeader>
-      <CardContent>
-        <p className="text-xs text-gray-500">Expense logs dashboard will populate fuel consumption data from logs.</p>
-      </CardContent>
-    </Card>
-  </div>
-);
+// Fuel & Expenses features loaded from features/fuel-expenses/
 
 // Placeholder: Reports
 const ReportsPage = () => (
@@ -275,7 +263,7 @@ function App() {
 
             {/* Fuel expenses and Reports (Accessible to Fleet Manager and Financial Analyst only) */}
             <Route element={<RoleGuard allowedRoles={['Fleet Manager', 'Financial Analyst']} />}>
-              <Route path="/fuel-expenses" element={<FuelExpensesPage />} />
+              <Route path="/fuel-expenses" element={<FuelExpensesList />} />
               <Route path="/reports" element={<ReportsPage />} />
             </Route>
 
