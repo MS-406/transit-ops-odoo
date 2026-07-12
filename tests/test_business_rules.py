@@ -5,6 +5,7 @@ import uuid
 from datetime import date, timedelta
 
 from app.main import app
+from app.db.session import engine
 
 BASE_URL = "http://test"
 
@@ -12,6 +13,7 @@ BASE_URL = "http://test"
 async def client():
     async with AsyncClient(transport=ASGITransport(app=app), base_url=BASE_URL) as ac:
         yield ac
+    await engine.dispose()
 
 @pytest_asyncio.fixture
 async def auth_headers(client):

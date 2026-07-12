@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { CommandPalette } from './CommandPalette';
+import { toast } from 'react-hot-toast';
 import {
   LayoutDashboard,
   Truck,
   Users,
-  Route,
+  Route as RouteIcon,
   Wrench,
   Fuel,
   BarChart3,
@@ -21,7 +22,8 @@ import {
 export const Shell = ({ children }) => {
   const { user, token, logout, setRole, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Initialize based on window width to keep open on desktop and closed on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   useEffect(() => {
@@ -32,12 +34,37 @@ export const Shell = ({ children }) => {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    // Update sidebar state on resize if needed
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNotificationClick = () => {
+    toast('No new notifications', {
+      icon: '🔔',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
   };
 
   // Nav items with RBAC roles configuration
@@ -63,7 +90,7 @@ export const Shell = ({ children }) => {
     {
       name: 'Trips',
       path: '/trips',
-      icon: Route,
+      icon: RouteIcon,
       roles: ['Dispatcher', 'Safety Officer', 'Admin'],
     },
     {
@@ -103,21 +130,93 @@ export const Shell = ({ children }) => {
     user && item.roles.includes(user.role)
   );
 
+  const SidebarContent = ({ onNavigate }) => (
+    <div className="flex flex-col h-full bg-uber-white">
+      <div className="md:hidden flex items-center justify-between mb-8 px-4 pt-6">
+        <span className="text-lg font-black uppercase tracking-tight">Transit<span className="text-uber-green">Ops</span></span>
+        <button 
+          onClick={() => setIsSidebarOpen(false)}
+          className="p-1 hover:bg-uber-gray-100 rounded-full"
+        >
+          <X size={20} />
+        </button>
+      </div>
+
+      {/* Mobile Role Switching */}
+      {user && token === 'mock-jwt-token-12345' && (
+        <div className="md:hidden mb-6 mx-4 flex flex-col gap-1 px-2 py-3 bg-uber-gray-100 rounded-xl">
+          <span className="text-[10px] uppercase font-bold text-gray-500">Preview Role</span>
+          <select
+            value={user.role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full bg-transparent text-uber-black font-bold outline-none text-xs border-none"
+          >
+            <option value="Admin">Admin</option>
+            <option value="Fleet Manager">Fleet Manager</option>
+            <option value="Dispatcher">Dispatcher</option>
+            <option value="Driver">Driver</option>
+            <option value="Safety Officer">Safety Officer</option>
+            <option value="Financial Analyst">Financial Analyst</option>
+          </select>
+        </div>
+      )}
+
+      <nav className="flex-1 space-y-1.5 px-4 md:pt-6">
+        {allowedNavItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wide transition-all duration-150 ease-out active:scale-[0.98]
+                ${isActive
+                  ? 'bg-uber-black text-uber-white shadow-sm'
+                  : 'text-gray-500 hover:text-uber-black hover:bg-uber-gray-100'
+                }`
+              }
+            >
+              <Icon size={18} />
+              <span>{item.name}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Footer of Sidebar */}
+      {isAuthenticated && (
+        <div className="px-4 pb-6 mt-auto">
+          <button
+            onClick={() => {
+              if (onNavigate) onNavigate();
+              handleLogout();
+            }}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wide text-uber-red hover:bg-red-50 transition-colors w-full text-left"
+          >
+            <LogOut size={18} />
+            <span>Log Out</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen flex flex-col bg-uber-gray-100 text-uber-black font-sans">
+    <div className="h-screen flex flex-col bg-uber-gray-100 text-uber-black font-sans">
       
       {/* Top Header Navbar */}
       <header className="sticky top-0 z-40 w-full bg-uber-black text-uber-white flex items-center justify-between px-6 py-4 shadow-md select-none">
         <div className="flex items-center gap-3">
-          {/* Mobile hamburger */}
+          {/* Hamburger Menu - Visible on all screens */}
           <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-            className="md:hidden text-uber-white hover:text-uber-green transition-colors"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+            className="text-uber-white hover:text-uber-green transition-colors"
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           
-          <span className="text-xl font-extrabold tracking-tighter uppercase">
+          <span className="text-xl font-extrabold tracking-tighter uppercase ml-2">
             Transit<span className="text-uber-green">Ops</span>
           </span>
         </div>
@@ -146,7 +245,10 @@ export const Shell = ({ children }) => {
           )}
 
           {/* Notification Indicator */}
-          <button className="relative p-2 text-gray-300 hover:text-uber-white transition-colors hover:scale-105 active:scale-95">
+          <button 
+            onClick={handleNotificationClick}
+            className="relative p-2 text-gray-300 hover:text-uber-white transition-colors hover:scale-105 active:scale-95"
+          >
             <Bell size={20} />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-uber-green rounded-full"></span>
           </button>
@@ -167,123 +269,34 @@ export const Shell = ({ children }) => {
       </header>
 
       {/* Main Body */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative overflow-hidden">
 
         {/* Sidebar Nav: Desktop */}
-        <aside className="hidden md:flex flex-col w-64 bg-uber-white border-r border-uber-gray-300 py-6 px-4 shrink-0 select-none">
-          <nav className="flex-1 space-y-1.5">
-            {allowedNavItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wide transition-all duration-150 ease-out active:scale-[0.98]
-                    ${isActive
-                      ? 'bg-uber-black text-uber-white shadow-sm'
-                      : 'text-gray-500 hover:text-uber-black hover:bg-uber-gray-100'
-                    }`
-                  }
-                >
-                  <Icon size={18} />
-                  <span>{item.name}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
-
-          {/* Footer of Sidebar */}
-          {isAuthenticated && (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 mt-auto rounded-xl text-sm font-semibold uppercase tracking-wide text-uber-red hover:bg-red-50 transition-colors w-full text-left"
-            >
-              <LogOut size={18} />
-              <span>Log Out</span>
-            </button>
-          )}
-        </aside>
+        <div 
+          className={`hidden md:block transition-all duration-300 ease-in-out border-r border-uber-gray-300 shrink-0 select-none ${
+            isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+          }`}
+        >
+          <SidebarContent />
+        </div>
 
         {/* Sidebar Nav: Mobile Overlay Drawer */}
-        {isMobileMenuOpen && (
+        {isSidebarOpen && (
           <div className="fixed inset-0 z-50 md:hidden flex">
             {/* Backdrop */}
             <div 
               className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => setIsSidebarOpen(false)}
             />
             {/* Sidebar drawer content */}
-            <aside className="relative flex flex-col w-64 max-w-xs bg-uber-white h-full py-6 px-4 z-10 animate-slide-right shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
-                <span className="text-lg font-black uppercase tracking-tight">Transit<span className="text-uber-green">Ops</span></span>
-                <button 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1 hover:bg-uber-gray-100 rounded-full"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Mobile Role Switching */}
-              {user && token === 'mock-jwt-token-12345' && (
-                <div className="mb-6 flex flex-col gap-1 px-2 py-3 bg-uber-gray-100 rounded-xl">
-                  <span className="text-[10px] uppercase font-bold text-gray-500">Preview Role</span>
-                  <select
-                    value={user.role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full bg-transparent text-uber-black font-bold outline-none text-xs border-none"
-                  >
-                    <option value="Admin">Admin</option>
-                    <option value="Fleet Manager">Fleet Manager</option>
-                    <option value="Dispatcher">Dispatcher</option>
-                    <option value="Driver">Driver</option>
-                    <option value="Safety Officer">Safety Officer</option>
-                    <option value="Financial Analyst">Financial Analyst</option>
-                  </select>
-                </div>
-              )}
-
-              <nav className="flex-1 space-y-1.5" onClick={() => setIsMobileMenuOpen(false)}>
-                {allowedNavItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wide
-                        ${isActive
-                          ? 'bg-uber-black text-uber-white'
-                          : 'text-gray-500 hover:text-uber-black hover:bg-uber-gray-100'
-                        }`
-                      }
-                    >
-                      <Icon size={18} />
-                      <span>{item.name}</span>
-                    </NavLink>
-                  );
-                })}
-              </nav>
-
-              {isAuthenticated && (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 mt-auto rounded-xl text-sm font-semibold uppercase tracking-wide text-uber-red hover:bg-red-50 transition-colors w-full text-left"
-                >
-                  <LogOut size={18} />
-                  <span>Log Out</span>
-                </button>
-              )}
+            <aside className="relative flex flex-col w-64 max-w-xs h-full z-10 animate-slide-right shadow-2xl">
+              <SidebarContent onNavigate={() => setIsSidebarOpen(false)} />
             </aside>
           </div>
         )}
 
         {/* Content Canvas */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8 bg-uber-gray-100">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 md:p-8 bg-uber-gray-100 min-w-0">
           <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
