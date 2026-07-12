@@ -19,7 +19,8 @@ async def seed_data():
             "fleet_manager",
             "driver",
             "safety_officer",
-            "financial_analyst"
+            "financial_analyst",
+            "admin"
         ]
         
         roles_db = {}
@@ -63,6 +64,12 @@ async def seed_data():
                 "email": "analyst@transitops.com",
                 "full_name": "Financial Analyst",
                 "role_name": "financial_analyst",
+                "password": "password123"
+            },
+            {
+                "email": "admin@transitops.com",
+                "full_name": "System Admin",
+                "role_name": "admin",
                 "password": "password123"
             }
         ]
