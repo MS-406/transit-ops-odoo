@@ -44,7 +44,9 @@ export const driversApi = {
       auditLogger.logAction('CREATE_DRIVER', `Created driver ${newDriver.name} (${newDriver.license_class})`);
       return { data: newDriver };
     }
-    return client.post('/drivers', data);
+    const res = await client.post('/drivers', data);
+    auditLogger.logAction('CREATE_DRIVER', `Created driver ${res.data.name} (${res.data.license_class})`);
+    return res;
   },
 
   updateDriver: async (id, data) => {
@@ -54,6 +56,8 @@ export const driversApi = {
       auditLogger.logAction('UPDATE_DRIVER', `Updated driver ${updated.name} (Status: ${updated.status})`);
       return { data: updated };
     }
-    return client.patch(`/drivers/${id}`, data);
+    const res = await client.patch(`/drivers/${id}`, data);
+    auditLogger.logAction('UPDATE_DRIVER', `Updated driver ${res.data.name} (Status: ${res.data.status})`);
+    return res;
   }
 };

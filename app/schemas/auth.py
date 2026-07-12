@@ -18,5 +18,7 @@ class TokenResponse(BaseModel):
     refresh_token: str
     user: UserOut
 
+from typing import Optional
+
 class TokenRefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: Optional[str] = None

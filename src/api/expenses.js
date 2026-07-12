@@ -47,7 +47,9 @@ export const expensesApi = {
       logs.sort((a, b) => new Date(b.date) - new Date(a.date));
       return { data: logs };
     }
-    return client.get('/fuel-logs', { params });
+    const queryParams = { ...params };
+    if (!queryParams.vehicle_id) delete queryParams.vehicle_id;
+    return client.get('/fuel-logs', { params: queryParams });
   },
 
   createFuelLog: async (data) => {
@@ -71,7 +73,9 @@ export const expensesApi = {
       auditLogger.logAction('LOG_FUEL', `Logged ${data.liters} Liters refuel ($${data.cost}) for vehicle ${vehicle.registration_number}`);
       return { data: { id: `fuel-${vehicle.id}-${vehicle.fuel_logs.length - 1}`, ...data } };
     }
-    return client.post('/fuel-logs', data);
+    const res = await client.post('/fuel-logs', data);
+    auditLogger.logAction('LOG_FUEL', `Logged ${data.liters} Liters refuel ($${data.cost}) for vehicle ${res.data.vehicle_reg}`);
+    return res;
   },
 
   getExpenses: async (params = {}) => {
@@ -86,7 +90,9 @@ export const expensesApi = {
       list.sort((a, b) => new Date(b.date) - new Date(a.date));
       return { data: list };
     }
-    return client.get('/expenses', { params });
+    const queryParams = { ...params };
+    if (!queryParams.vehicle_id) delete queryParams.vehicle_id;
+    return client.get('/expenses', { params: queryParams });
   },
 
   createExpense: async (data) => {
@@ -112,6 +118,8 @@ export const expensesApi = {
       auditLogger.logAction('LOG_EXPENSE', `Logged ${newExpense.category} expense ($${newExpense.cost}) for vehicle ${newExpense.vehicle_reg}: ${newExpense.description}`);
       return { data: newExpense };
     }
-    return client.post('/expenses', data);
+    const res = await client.post('/expenses', data);
+    auditLogger.logAction('LOG_EXPENSE', `Logged ${res.data.category} expense ($${res.data.cost}) for vehicle ${res.data.vehicle_reg}: ${res.data.description}`);
+    return res;
   }
 };

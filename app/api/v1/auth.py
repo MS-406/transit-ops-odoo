@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Request
+from fastapi import APIRouter, Depends, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -30,7 +30,7 @@ def _user_to_dict(user: User) -> dict:
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("5/minute")
-async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(request: Request, response: Response, payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     # Find user by email, eager load role
     result = await db.execute(
         select(User)
@@ -63,6 +63,15 @@ async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depe
     await db.commit()
     await db.refresh(user)
     
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60
+    )
+    
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -70,9 +79,17 @@ async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depe
     }
 
 @router.post("/refresh")
-async def refresh_token(payload: TokenRefreshRequest, db: AsyncSession = Depends(get_db)):
+async def refresh_token(request: Request, response: Response, payload: TokenRefreshRequest, db: AsyncSession = Depends(get_db)):
+    token_val = payload.refresh_token or request.cookies.get("refresh_token")
+    if not token_val:
+        raise APIException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing.",
+            code="MISSING_REFRESH_TOKEN"
+        )
+        
     # Decode and validate refresh token
-    token_data = decode_token(payload.refresh_token)
+    token_data = decode_token(token_val)
     if not token_data or token_data.get("type") != "refresh":
         raise APIException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -104,7 +121,7 @@ async def refresh_token(payload: TokenRefreshRequest, db: AsyncSession = Depends
         )
         
     # Replay attack check: compare against stored refresh token
-    if user.refresh_token != payload.refresh_token:
+    if user.refresh_token != token_val:
         # Replay attack! Someone is trying to reuse an old or hijacked refresh token.
         # Immediately invalidate the current session by clearing the database stored token.
         user.refresh_token = None
@@ -125,6 +142,15 @@ async def refresh_token(payload: TokenRefreshRequest, db: AsyncSession = Depends
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60
+    )
     
     return {
         "access_token": new_access_token,

@@ -78,7 +78,7 @@ async def create_driver(
             code="DUPLICATE_LICENSE"
         )
 
-@router.put("/{driver_id}", response_model=DriverOut)
+@router.patch("/{driver_id}", response_model=DriverOut)
 async def update_driver(
     driver_id: int,
     payload: DriverUpdate,

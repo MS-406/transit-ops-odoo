@@ -202,17 +202,32 @@ async def complete_trip(
     result_drv = await db.execute(select(Driver).where(Driver.id == trip.driver_id).with_for_update())
     driver = result_drv.scalars().first()
         
+    if payload.final_odometer < vehicle.odometer:
+        raise APIException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Final odometer ({payload.final_odometer}) cannot be less than previous ({vehicle.odometer}).", code="INVALID_ODOMETER")
+        
+    actual_distance = payload.final_odometer - vehicle.odometer
+    
     trip.status = "Completed"
     trip.completed_at = datetime.utcnow()
-    trip.actual_distance = payload.actual_distance
+    trip.actual_distance = actual_distance
     trip.fuel_consumed = payload.fuel_consumed
     trip.final_odometer = payload.final_odometer
     
     vehicle.status = "Available"
     driver.status = "Available"
     
-    if payload.final_odometer is not None:
-        vehicle.odometer = payload.final_odometer
+    vehicle.odometer = payload.final_odometer
+    
+    if payload.fuel_consumed > 0:
+        from app.models.fuel import FuelLog
+        fuel_log = FuelLog(
+            vehicle_id=vehicle.id,
+            trip_id=trip.id,
+            log_date=datetime.utcnow(),
+            liters=payload.fuel_consumed,
+            cost=payload.fuel_consumed * 1.5
+        )
+        db.add(fuel_log)
         
     db.add(trip)
     db.add(vehicle)

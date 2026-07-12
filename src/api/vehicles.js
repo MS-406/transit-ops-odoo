@@ -68,7 +68,9 @@ export const vehiclesApi = {
       auditLogger.logAction('CREATE_VEHICLE', `Created vehicle ${newVehicle.registration_number} (${newVehicle.model})`);
       return { data: newVehicle };
     }
-    return client.post('/vehicles', data);
+    const res = await client.post('/vehicles', data);
+    auditLogger.logAction('CREATE_VEHICLE', `Created vehicle ${res.data.registration_number} (${res.data.model})`);
+    return res;
   },
 
   updateVehicle: async (id, data) => {
@@ -96,7 +98,9 @@ export const vehiclesApi = {
       auditLogger.logAction('UPDATE_VEHICLE', `Updated vehicle ${updated.registration_number} (${updated.model})`);
       return { data: updated };
     }
-    return client.patch(`/vehicles/${id}`, data);
+    const res = await client.patch(`/vehicles/${id}`, data);
+    auditLogger.logAction('UPDATE_VEHICLE', `Updated vehicle ${res.data.registration_number} (${res.data.model})`);
+    return res;
   },
 
   deleteVehicle: async (id) => {
@@ -107,6 +111,8 @@ export const vehiclesApi = {
       auditLogger.logAction('DELETE_VEHICLE', `Deleted vehicle ${vehicle?.registration_number || id}`);
       return { data: { success: true } };
     }
-    return client.delete(`/vehicles/${id}`);
+    const res = await client.delete(`/vehicles/${id}`);
+    auditLogger.logAction('DELETE_VEHICLE', `Deleted vehicle ${id}`);
+    return res;
   }
 };

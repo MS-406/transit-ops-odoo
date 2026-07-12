@@ -75,7 +75,7 @@ async def create_vehicle(
             code="DUPLICATE_REGISTRATION"
         )
 
-@router.put("/{vehicle_id}", response_model=VehicleOut)
+@router.patch("/{vehicle_id}", response_model=VehicleOut)
 async def update_vehicle(
     vehicle_id: int,
     payload: VehicleUpdate,

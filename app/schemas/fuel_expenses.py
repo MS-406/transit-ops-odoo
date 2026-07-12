@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import date
+import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class FuelLogBase(BaseModel):
@@ -7,39 +7,51 @@ class FuelLogBase(BaseModel):
     trip_id: Optional[int] = None
     liters: float = Field(..., gt=0, description="Liters must be greater than zero")
     cost: float = Field(..., ge=0, description="Cost cannot be negative")
-    log_date: date
+    log_date: datetime.date
 
     @field_validator("log_date")
     def validate_date(cls, v):
-        if v > date.today():
+        if v > datetime.date.today():
             raise ValueError("Log date cannot be in the future")
         return v
 
 class FuelLogCreate(FuelLogBase):
     pass
 
-class FuelLogOut(FuelLogBase):
+class FuelLogOut(BaseModel):
     id: int
+    vehicle_id: int
+    vehicle_reg: str
+    vehicle_model: str
+    liters: float
+    cost: float
+    date: datetime.date
     
     model_config = ConfigDict(from_attributes=True)
 
 class ExpenseBase(BaseModel):
     vehicle_id: Optional[int] = None
-    type: str = Field(..., description="Type of expense (e.g. toll, maintenance, other)")
-    amount: float = Field(..., ge=0, description="Amount cannot be negative")
+    category: str = Field(alias="type", description="Type of expense (e.g. toll, maintenance, other)")
+    cost: float = Field(alias="amount", ge=0, description="Amount cannot be negative")
     description: str
-    log_date: date
+    date: datetime.date = Field(alias="log_date")
 
-    @field_validator("log_date")
+    @field_validator("date", mode="before")
     def validate_date(cls, v):
-        if v > date.today():
+        if isinstance(v, datetime.date) and v > datetime.date.today():
             raise ValueError("Log date cannot be in the future")
         return v
 
 class ExpenseCreate(ExpenseBase):
     pass
 
-class ExpenseOut(ExpenseBase):
+class ExpenseOut(BaseModel):
     id: int
+    date: datetime.date
+    category: str
+    cost: float
+    vehicle_id: Optional[int]
+    vehicle_reg: str
+    description: str
     
     model_config = ConfigDict(from_attributes=True)

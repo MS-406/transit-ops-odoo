@@ -27,7 +27,21 @@ async def list_maintenance(
         query = query.where(MaintenanceLog.vehicle_id == vehicle_id)
         
     result = await db.execute(query)
-    return result.scalars().all()
+    logs = result.scalars().all()
+    
+    out = []
+    for log in logs:
+        out.append(MaintenanceOut(
+            id=log.id,
+            description=log.description,
+            cost=log.cost,
+            status="Open" if log.is_active else "Closed",
+            date=log.opened_at,
+            vehicle_id=log.vehicle_id,
+            vehicle_reg=log.vehicle.registration_number if log.vehicle else "N/A",
+            vehicle_model=log.vehicle.name_model if log.vehicle else "Unknown"
+        ))
+    return out
 
 @router.post("", response_model=MaintenanceOut, status_code=status.HTTP_201_CREATED)
 async def create_maintenance(
@@ -70,7 +84,18 @@ async def create_maintenance(
         .options(selectinload(MaintenanceLog.vehicle))
         .where(MaintenanceLog.id == log.id)
     )
-    return result.scalars().first()
+    saved_log = result.scalars().first()
+    
+    return MaintenanceOut(
+        id=saved_log.id,
+        description=saved_log.description,
+        cost=saved_log.cost,
+        status="Open" if saved_log.is_active else "Closed",
+        date=saved_log.opened_at,
+        vehicle_id=saved_log.vehicle_id,
+        vehicle_reg=saved_log.vehicle.registration_number if saved_log.vehicle else "N/A",
+        vehicle_model=saved_log.vehicle.name_model if saved_log.vehicle else "Unknown"
+    )
 
 @router.patch("/{log_id}/close", response_model=MaintenanceOut)
 async def close_maintenance(
@@ -107,4 +132,15 @@ async def close_maintenance(
         .options(selectinload(MaintenanceLog.vehicle))
         .where(MaintenanceLog.id == log.id)
     )
-    return result.scalars().first()
+    saved_log = result.scalars().first()
+    
+    return MaintenanceOut(
+        id=saved_log.id,
+        description=saved_log.description,
+        cost=saved_log.cost,
+        status="Open" if saved_log.is_active else "Closed",
+        date=saved_log.opened_at,
+        vehicle_id=saved_log.vehicle_id,
+        vehicle_reg=saved_log.vehicle.registration_number if saved_log.vehicle else "N/A",
+        vehicle_model=saved_log.vehicle.name_model if saved_log.vehicle else "Unknown"
+    )

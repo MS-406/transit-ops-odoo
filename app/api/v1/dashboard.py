@@ -63,11 +63,13 @@ async def get_kpis(
     utilization_pct = (num_on_trip / num_active * 100) if num_active > 0 else 0.0
     
     return DashboardKPIsOut(
-        active_vehicles=num_active,
-        available_vehicles=num_available,
-        in_maintenance=num_in_maintenance,
-        active_trips=num_active_trips,
-        pending_trips=num_pending_trips,
-        drivers_on_duty=num_drivers_on_duty,
-        fleet_utilization_pct=utilization_pct
+        totalVehicles=len(vehicles),
+        activeVehicles=num_active,
+        availableVehicles=num_available,
+        inMaintenance=num_in_maintenance,
+        retiredVehicles=len([v for v in vehicles if v.status == "Retired"]),
+        activeTrips=num_active_trips,
+        pendingTrips=num_pending_trips,
+        driversOnDuty=num_drivers_on_duty,
+        utilizationRate=utilization_pct
     )

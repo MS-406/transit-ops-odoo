@@ -54,7 +54,9 @@ export const tripsApi = {
       auditLogger.logAction('CREATE_TRIP', `Created Trip draft #${newTrip.id} (Route: ${newTrip.source} -> ${newTrip.destination})`);
       return { data: newTrip };
     }
-    return client.post('/trips', data);
+    const res = await client.post('/trips', data);
+    auditLogger.logAction('CREATE_TRIP', `Created Trip draft #${res.data.id} (Route: ${res.data.source} -> ${res.data.destination})`);
+    return res;
   },
 
   dispatchTrip: async (id) => {
@@ -84,7 +86,9 @@ export const tripsApi = {
       auditLogger.logAction('DISPATCH_TRIP', `Dispatched Trip #${trip.id} (Route: ${trip.source} -> ${trip.destination})`);
       return { data: trip };
     }
-    return client.patch(`/trips/${id}/dispatch`);
+    const res = await client.patch(`/trips/${id}/dispatch`);
+    auditLogger.logAction('DISPATCH_TRIP', `Dispatched Trip #${res.data.id} (Route: ${res.data.source} -> ${res.data.destination})`);
+    return res;
   },
 
   cancelTrip: async (id) => {
@@ -113,7 +117,9 @@ export const tripsApi = {
       auditLogger.logAction('CANCEL_TRIP', `Cancelled Trip #${trip.id}`);
       return { data: trip };
     }
-    return client.patch(`/trips/${id}/cancel`);
+    const res = await client.patch(`/trips/${id}/cancel`);
+    auditLogger.logAction('CANCEL_TRIP', `Cancelled Trip #${id}`);
+    return res;
   },
 
   completeTrip: async (id, data) => {
@@ -170,6 +176,8 @@ export const tripsApi = {
       auditLogger.logAction('COMPLETE_TRIP', `Completed Trip #${trip.id}. Final Odometer: ${trip.final_odometer} km, Fuel Consumed: ${trip.fuel_consumed} L.`);
       return { data: trip };
     }
-    return client.patch(`/trips/${id}/complete`, data);
+    const res = await client.patch(`/trips/${id}/complete`, data);
+    auditLogger.logAction('COMPLETE_TRIP', `Completed Trip #${id}. Final Odometer: ${res.data.final_odometer} km, Fuel Consumed: ${res.data.fuel_consumed} L.`);
+    return res;
   }
 };

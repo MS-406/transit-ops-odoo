@@ -28,9 +28,8 @@ class CreatorOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class TripCompleteRequest(BaseModel):
-    actual_distance: float
+    final_odometer: float
     fuel_consumed: float
-    final_odometer: Optional[float] = None
 
 class TripOut(TripBase):
     id: int

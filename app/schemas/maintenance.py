@@ -15,12 +15,14 @@ class MaintenanceUpdate(BaseModel):
     description: Optional[str] = None
     cost: Optional[float] = None
 
-class MaintenanceOut(MaintenanceBase):
+class MaintenanceOut(BaseModel):
     id: int
-    is_active: bool
-    opened_at: datetime
-    closed_at: Optional[datetime] = None
-    
-    vehicle: Optional[VehicleOut] = None
+    description: str
+    cost: float
+    status: str
+    date: datetime
+    vehicle_id: int
+    vehicle_reg: str
+    vehicle_model: str
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
