@@ -10,7 +10,7 @@ from app.models.trip import Trip
 from app.models.vehicle import Vehicle
 from app.models.driver import Driver
 from app.models.user import User
-from app.schemas.trip import TripCreate, TripUpdate, TripOut
+from app.schemas.trip import TripCreate, TripUpdate, TripOut, TripCompleteRequest
 from app.core.deps import get_current_user, require_role
 from app.core.exceptions import APIException
 
@@ -124,18 +124,15 @@ async def update_trip(
     )
     return result.scalars().first()
 
-@router.post("/{trip_id}/dispatch", response_model=TripOut)
+@router.patch("/{trip_id}/dispatch", response_model=TripOut)
 async def dispatch_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager"]))
 ):
     """Dispatch a trip. Transitions Draft -> Dispatched."""
-    result = await db.execute(
-        select(Trip)
-        .options(selectinload(Trip.vehicle), selectinload(Trip.driver))
-        .where(Trip.id == trip_id)
-    )
+    # Lock the trip
+    result = await db.execute(select(Trip).where(Trip.id == trip_id).with_for_update())
     trip = result.scalars().first()
     if not trip:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found", code="NOT_FOUND")
@@ -143,13 +140,21 @@ async def dispatch_trip(
     if trip.status != "Draft":
         raise APIException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only Draft trips can be dispatched.", code="INVALID_STATE")
         
-    if trip.vehicle.status != "Available":
+    # Lock the vehicle
+    result_veh = await db.execute(select(Vehicle).where(Vehicle.id == trip.vehicle_id).with_for_update())
+    vehicle = result_veh.scalars().first()
+    
+    # Lock the driver
+    result_drv = await db.execute(select(Driver).where(Driver.id == trip.driver_id).with_for_update())
+    driver = result_drv.scalars().first()
+        
+    if vehicle.status != "Available":
         raise APIException(status_code=status.HTTP_400_BAD_REQUEST, detail="Vehicle is not available.", code="VEHICLE_UNAVAILABLE")
         
-    if trip.driver.status != "Available":
+    if driver.status != "Available":
         raise APIException(status_code=status.HTTP_400_BAD_REQUEST, detail="Driver is not available.", code="DRIVER_UNAVAILABLE")
         
-    if trip.driver.license_expiry_date < date.today():
+    if driver.license_expiry_date < date.today():
          raise APIException(
              status_code=status.HTTP_400_BAD_REQUEST,
              detail="Driver's license is expired.",
@@ -158,12 +163,12 @@ async def dispatch_trip(
          
     trip.status = "Dispatched"
     trip.dispatched_at = datetime.utcnow()
-    trip.vehicle.status = "On Trip"
-    trip.driver.status = "On Trip"
+    vehicle.status = "On Trip"
+    driver.status = "On Trip"
     
     db.add(trip)
-    db.add(trip.vehicle)
-    db.add(trip.driver)
+    db.add(vehicle)
+    db.add(driver)
     await db.commit()
     
     result = await db.execute(
@@ -173,18 +178,16 @@ async def dispatch_trip(
     )
     return result.scalars().first()
 
-@router.post("/{trip_id}/complete", response_model=TripOut)
+@router.patch("/{trip_id}/complete", response_model=TripOut)
 async def complete_trip(
     trip_id: int,
+    payload: TripCompleteRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager", "driver"]))
 ):
     """Complete a trip. Transitions Dispatched -> Completed."""
-    result = await db.execute(
-        select(Trip)
-        .options(selectinload(Trip.vehicle), selectinload(Trip.driver))
-        .where(Trip.id == trip_id)
-    )
+    # Lock the trip
+    result = await db.execute(select(Trip).where(Trip.id == trip_id).with_for_update())
     trip = result.scalars().first()
     if not trip:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found", code="NOT_FOUND")
@@ -192,24 +195,28 @@ async def complete_trip(
     if trip.status != "Dispatched":
         raise APIException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only Dispatched trips can be completed.", code="INVALID_STATE")
         
-    if trip.actual_distance is None or trip.fuel_consumed is None:
-        raise APIException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Cannot complete trip without actual_distance and fuel_consumed.", 
-            code="MISSING_DATA"
-        )
+    # Lock the vehicle and driver
+    result_veh = await db.execute(select(Vehicle).where(Vehicle.id == trip.vehicle_id).with_for_update())
+    vehicle = result_veh.scalars().first()
+    
+    result_drv = await db.execute(select(Driver).where(Driver.id == trip.driver_id).with_for_update())
+    driver = result_drv.scalars().first()
         
     trip.status = "Completed"
     trip.completed_at = datetime.utcnow()
-    trip.vehicle.status = "Available"
-    trip.driver.status = "Available"
+    trip.actual_distance = payload.actual_distance
+    trip.fuel_consumed = payload.fuel_consumed
+    trip.final_odometer = payload.final_odometer
     
-    if trip.final_odometer:
-        trip.vehicle.odometer = trip.final_odometer
+    vehicle.status = "Available"
+    driver.status = "Available"
+    
+    if payload.final_odometer is not None:
+        vehicle.odometer = payload.final_odometer
         
     db.add(trip)
-    db.add(trip.vehicle)
-    db.add(trip.driver)
+    db.add(vehicle)
+    db.add(driver)
     await db.commit()
     
     result = await db.execute(
@@ -219,18 +226,15 @@ async def complete_trip(
     )
     return result.scalars().first()
 
-@router.post("/{trip_id}/cancel", response_model=TripOut)
+@router.patch("/{trip_id}/cancel", response_model=TripOut)
 async def cancel_trip(
     trip_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(["fleet_manager"]))
 ):
     """Cancel a trip. Transitions Draft/Dispatched -> Cancelled."""
-    result = await db.execute(
-        select(Trip)
-        .options(selectinload(Trip.vehicle), selectinload(Trip.driver))
-        .where(Trip.id == trip_id)
-    )
+    # Lock the trip
+    result = await db.execute(select(Trip).where(Trip.id == trip_id).with_for_update())
     trip = result.scalars().first()
     if not trip:
         raise APIException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found", code="NOT_FOUND")
@@ -245,10 +249,17 @@ async def cancel_trip(
     db.add(trip)
     
     if was_dispatched:
-        trip.vehicle.status = "Available"
-        trip.driver.status = "Available"
-        db.add(trip.vehicle)
-        db.add(trip.driver)
+        # Lock vehicle and driver to revert status
+        result_veh = await db.execute(select(Vehicle).where(Vehicle.id == trip.vehicle_id).with_for_update())
+        vehicle = result_veh.scalars().first()
+        
+        result_drv = await db.execute(select(Driver).where(Driver.id == trip.driver_id).with_for_update())
+        driver = result_drv.scalars().first()
+        
+        vehicle.status = "Available"
+        driver.status = "Available"
+        db.add(vehicle)
+        db.add(driver)
         
     await db.commit()
     
