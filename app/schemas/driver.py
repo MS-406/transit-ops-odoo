@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime, date
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 class DriverBase(BaseModel):
     name: str
@@ -27,5 +27,9 @@ class DriverOut(DriverBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    @computed_field
+    def is_expired(self) -> bool:
+        return self.license_expiry_date < date.today()
 
     model_config = ConfigDict(from_attributes=True)
