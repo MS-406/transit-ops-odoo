@@ -3,7 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '../../api/dashboard';
 import { vehiclesApi } from '../../api/vehicles';
 import { tripsApi } from '../../api/trips';
+import { driversApi } from '../../api/drivers';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
+import { SmartInsightsPanel } from './SmartInsightsPanel';
+import { DashboardAnalytics } from './DashboardAnalytics';
 import { FilterDropdown } from '../../components/ui/FilterDropdown';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -18,8 +21,10 @@ import {
   Zap,
   Calendar,
   Route,
-  Activity
+  Activity,
+  AlertCircle
 } from 'lucide-react';
+import { parseISO, differenceInDays } from 'date-fns';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
@@ -48,7 +53,26 @@ export const Dashboard = () => {
     select: (res) => res.data
   });
 
+  const { data: drivers } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: () => driversApi.getDrivers(),
+    select: (res) => res.data
+  });
+
+  const { data: analytics } = useQuery({
+    queryKey: ['dashboard-analytics'],
+    queryFn: () => dashboardApi.getAnalytics(),
+    select: (res) => res.data
+  });
+
   const isReadOnly = user?.role === 'Financial Analyst';
+
+  const today = parseISO('2026-07-12');
+  const expiringDrivers = (drivers || []).filter(d => {
+    if (!d.license_expiry) return false;
+    const daysLeft = differenceInDays(parseISO(d.license_expiry), today);
+    return daysLeft <= 30;
+  });
 
   // Build a feed of recent operational events
   const eventsFeed = [];
@@ -146,6 +170,20 @@ export const Dashboard = () => {
         </div>
       </div>
 
+      {expiringDrivers.length > 0 && (
+        <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6 rounded-r-md flex items-start gap-3">
+          <AlertCircle className="text-orange-500 mt-0.5" size={20} />
+          <div>
+            <h4 className="text-sm font-bold text-orange-800">Action Required: Driver Licenses Expiring Soon</h4>
+            <p className="text-xs text-orange-700 mt-1">
+              You have {expiringDrivers.length} driver(s) whose licenses are expired or expiring within 30 days.
+              Please check the Registry to update their files: 
+              <span className="font-semibold ml-1">{expiringDrivers.map(d => d.name).join(', ')}</span>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Dark KPI Banner Section */}
       <div className="bg-uber-black text-uber-white rounded-2xl p-6 md:p-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl border border-uber-gray-900 select-none">
         <div>
@@ -224,6 +262,9 @@ export const Dashboard = () => {
 
         </div>
       ) : null}
+
+      {analytics && <SmartInsightsPanel insights={analytics.insights} />}
+      {analytics && <DashboardAnalytics analyticsData={analytics} />}
 
       {/* Map and Operations Feeds */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -68,6 +68,7 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
     mutationFn: driversApi.createDriver,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-alerts'] });
       toast.success('Driver profile registered successfully.');
       onClose();
     },
@@ -82,6 +83,7 @@ export const DriverForm = ({ isOpen, onClose, driverId }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
       queryClient.invalidateQueries({ queryKey: ['driver', driverId] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-alerts'] });
       toast.success('Driver profile updated successfully.');
       onClose();
     },

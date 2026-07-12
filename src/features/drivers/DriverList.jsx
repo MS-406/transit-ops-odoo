@@ -47,6 +47,7 @@ export const DriverList = () => {
     mutationFn: ({ id, status }) => driversApi.updateDriver(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-alerts'] });
       toast.success('Driver status updated');
     },
     onError: (err) => {
@@ -68,12 +69,15 @@ export const DriverList = () => {
     const daysLeft = differenceInDays(expiryDate, today);
 
     if (daysLeft < 0) {
-      return { status: 'expired', label: 'Expired' };
+      return { status: 'expired', label: `Expired ${Math.abs(daysLeft)} days ago` };
+    }
+    if (daysLeft <= 7) {
+      return { status: 'danger', label: `Expires in ${daysLeft} days` };
     }
     if (daysLeft <= 30) {
-      return { status: 'warning', label: `${daysLeft} Days left` };
+      return { status: 'warning', label: `Expires in ${daysLeft} days` };
     }
-    return { status: 'valid', label: 'Valid' };
+    return { status: 'valid', label: 'License Valid' };
   };
 
   return (
@@ -199,18 +203,23 @@ export const DriverList = () => {
                       </td>
                       <td className="py-4 px-6 font-semibold">
                         {expInfo.status === 'expired' && (
-                          <span className="text-uber-red flex items-center gap-1.5 select-none">
-                            <AlertTriangle size={14} /> Expired ({driver.license_expiry})
+                          <span className="text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs flex items-center gap-1.5 w-max select-none">
+                            <AlertTriangle size={14} /> {expInfo.label}
+                          </span>
+                        )}
+                        {expInfo.status === 'danger' && (
+                          <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-full text-xs flex items-center gap-1.5 w-max select-none">
+                            <AlertTriangle size={14} /> {expInfo.label}
                           </span>
                         )}
                         {expInfo.status === 'warning' && (
-                          <span className="text-uber-amber flex items-center gap-1.5 select-none">
-                            <AlertTriangle size={14} /> {expInfo.label} ({driver.license_expiry})
+                          <span className="text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full text-xs flex items-center gap-1.5 w-max select-none">
+                            <AlertTriangle size={14} /> {expInfo.label}
                           </span>
                         )}
                         {expInfo.status === 'valid' && (
-                          <span className="text-uber-green select-none">
-                            Valid ({driver.license_expiry})
+                          <span className="text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs flex items-center gap-1.5 w-max select-none">
+                            {expInfo.label}
                           </span>
                         )}
                       </td>

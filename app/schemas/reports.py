@@ -28,3 +28,23 @@ class ROIReportOut(BaseModel):
     category: str
     cost: float
     revenue: float
+
+class SmartInsight(BaseModel):
+    label: str
+    value: str
+    subtext: str
+    trend: str = None
+
+class ChartDataPoint(BaseModel):
+    name: str
+    value: float
+    fill: str = None
+
+class DashboardAnalyticsOut(BaseModel):
+    insights: list[SmartInsight]
+    vehicleStatusDistribution: list[ChartDataPoint]
+    driverStatusDistribution: list[ChartDataPoint]
+    tripStatusDistribution: list[ChartDataPoint]
+    monthlyFuelExpenses: list[ChartDataPoint]
+    monthlyMaintenanceExpenses: list[ChartDataPoint]
+    operationalCostPerVehicle: list[ChartDataPoint]
